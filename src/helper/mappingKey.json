@@ -1,0 +1,7 @@
+{
+  "table": "t",
+  "source": "s",
+  "destination": "d",
+  "inInterface": "i",
+  "outInterface": "o"
+}
