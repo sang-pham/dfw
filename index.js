@@ -8,10 +8,13 @@ const listsRouter = require('./src/commands/router/list')
 const deleteRouter = require('./src/commands/router/delete')
 const flushRouter = require('./src/commands/router/flush')
 
-const appendRule = require('./src/commands/iptables/append')
-const deleteRule = require('./src/commands/iptables/delete')
-const insertRule = require('./src/commands/iptables/insert')
-const listRule = require('./src/commands/iptables/list')
+const appendRule = require('./src/commands/rules/append')
+const deleteRule = require('./src/commands/rules/delete')
+const insertRule = require('./src/commands/rules/insert')
+const listRule = require('./src/commands/rules/list')
+
+const newChain = require('./src/commands/chains/new')
+const deleteChain = require('./src/commands/chains/delete')
 
 const addCommand = program
   .command('add')
@@ -23,6 +26,13 @@ addCommand
   .option('-n, --name <string>', 'router unique name')
   .option('-ip, --ip <string>', 'router unique ip')
   .action(addRouter)
+
+addCommand
+  .command('chain')
+  .argument('<chainName>')
+  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
+  .option('-rn, --router-name <string>', 'router to add chain')
+  .action(newChain)
 
 
 const listCommand = program
@@ -46,6 +56,13 @@ deleteCommand
   .option('-n, --name <string>', 'exact router name')
   .option('-ip, --ip <string>', 'exact router ip')
   .action(deleteRouter)
+
+deleteCommand
+  .command('chain')
+  .argument('<chainName>')
+  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
+  .option('-rn, --router-name <string>', 'router to add chain')
+  .action(deleteChain)
 
 const flushCommand = program
   .command('flush')

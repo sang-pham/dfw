@@ -1,6 +1,10 @@
 const ruleConfig = require('../config/rules')
 const getRouterByOption = require('./getRouterByOption')
 const { checkIncludeObject } = require('./compare')
+const DEFAULT_CHAIN = {
+  filter: ['FORWARD', 'INPUT', 'OUTPUT'],
+  nat: ['FORWARD', 'INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING']
+}
 
 const saveRule = ({chainName, ruleOrder, options, type, rule}) =>  {
   switch(type) {
@@ -22,9 +26,15 @@ const handleAppend = (chainName, options, rule) => {
       routerConfig = {}
     }
     if (!routerConfig[table]) {
+      if (!Object.keys(DEFAULT_CHAIN).find(key => key == table)) {
+        throw new Error(`Invalid table ${table}`)
+      }
       routerConfig[table] = {}
     }
     if (!routerConfig[table][chainName]) {
+      if (!DEFAULT_CHAIN[table].find(item => item == chainName)) {
+        throw new Error(`Invalid chain ${chainName}`)
+      }
       routerConfig[table][chainName] = []
     }
     let chain = routerConfig[table][chainName]
@@ -47,9 +57,15 @@ const handleInsert = (chainName, ruleOrder, options, rule) => {
       routerConfig = {}
     }
     if (!routerConfig[table]) {
+      if (!Object.keys(DEFAULT_CHAIN).find(key => key == table)) {
+        throw new Error(`Invalid table ${table}`)
+      }
       routerConfig[table] = {}
     }
     if (!routerConfig[table][chainName]) {
+      if (!DEFAULT_CHAIN[table].find(item => item == chainName)) {
+        throw new Error(`Invalid chain ${chainName}`)
+      }
       routerConfig[table][chainName] = []
     }
     let chain = routerConfig[table][chainName]

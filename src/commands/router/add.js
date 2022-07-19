@@ -25,7 +25,20 @@ const addRouter = (options) => {
     ip, name
   })
   routerConfig.set('routers', routers)
-  ruleConfig.set(name, {})
+  ruleConfig.set(name, {
+    filter: {
+      FORWARD: [],
+      INPUT: [],
+      OUTPUT: []
+    },
+    nat: {
+      FORWARD: [],
+      INPUT: [],
+      OUTPUT: [],
+      POSTROUTING: [],
+      PREROUTING: []
+    }
+  })
   // console.log(router)
   return 'Add new router successfully'
 }
