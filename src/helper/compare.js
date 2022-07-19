@@ -22,7 +22,7 @@ const checkIncludeObject = (wrapperObj, includedObj) => {
     return true;
   }
   for (const key in includedObj) {
-    if (includedObj[key] != wrapperObjp[key]) {
+    if (includedObj[key] != wrapperObj[key]) {
       return false
     }
   }
