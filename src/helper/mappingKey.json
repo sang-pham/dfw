@@ -3,5 +3,8 @@
   "source": "s",
   "destination": "d",
   "inInterface": "i",
-  "outInterface": "o"
+  "outInterface": "o",
+  "sourcePort": "-sport",
+  "destinationPort": "-dport",
+  "protocol": "p"
 }

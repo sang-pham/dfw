@@ -80,6 +80,8 @@ function loadRuleOption(command) {
   command.option('-p, --protocol <string>', 'protocol: by name, eg. \`tcp\`')
   command.option('-s, --source <string>', 'source specification: list of address[/mask][...] separated by comma')
   command.option('-d, --destination <string>', 'destination specification: list of address[/mask][...] separated by comma')
+  command.option('-sport, --source-port <string>', 'source port number specification')
+  command.option('-dport, --destination-port <string>', 'source port number specification')
   command.option('-i, --in-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-o, --out-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-t, --table <string>', 'table to manipulate (default: \`filter\`)')
