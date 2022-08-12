@@ -16,6 +16,9 @@ const listRule = require('./src/commands/rules/list')
 const newChain = require('./src/commands/chains/new')
 const deleteChain = require('./src/commands/chains/delete')
 
+const getPolicy = require('./src/commands/policies/get')
+const updatePolicy = require('./src/commands/policies/update')
+
 const addCommand = program
   .command('add')
   .description('Use help for more options with add')
@@ -25,6 +28,9 @@ addCommand
   .description('Add new router')
   .option('-n, --name <string>', 'router unique name')
   .option('-ip, --ip <string>', 'router unique ip')
+  .option('--router-sync <string>', 'sync rule from a router or list of routers seperated by comma')
+  .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
+  .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
   .action(addRouter)
 
 addCommand
@@ -101,7 +107,7 @@ const deleteRuleCommand = program
   .command('D')
   .description('Delete rule from specific chain')
   .argument('<chain>')
-  .argument('[rule-order]')
+  .argument('[rule-order]', 'Optional rule order, value 0 means delete all rules in chain')
   .action(deleteRule)
 
 loadRuleOption(deleteRuleCommand)
@@ -124,6 +130,29 @@ const listRuleCommand = program
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .option('--line-numbers', 'List with rule order')
   .action(listRule)
+
+const getCommand = program.command('get').description('Use -h for more information for get command')
+
+getCommand
+  .command('policy')
+  .description('Get policy from specific chain')
+  .argument('<chain>')
+  .option('-rn, --router-name <string>', 'exact router name')
+  .option('-rip, --router-ip <string>', 'exact router ip')
+  .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
+  .action(getPolicy)
+
+const updateCommand = program.command('update').description('Use -h for more information for update command')
+
+updateCommand
+  .command('policy')
+  .description('Update policy for specific chain')
+  .argument('<chain>')
+  .argument('<new-policy>')
+  .option('-rn, --router-name <string>', 'exact router name')
+  .option('-rip, --router-ip <string>', 'exact router ip')
+  .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
+  .action(updatePolicy)
 
 try {
   program.parse();

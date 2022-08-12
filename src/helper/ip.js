@@ -6,8 +6,14 @@ const generateIpList = (options, key) => {
     list = options[key].split(',')
     if (list.length) {
       for (const ip of list) {
-        if (!IP_REGEX.test(ip)) {
-          throw new Error(`Ip address ${ip} is not valid`)
+        if (ip.includes('/')) {
+          if (!IP_REGEX.test(ip.split("/")[0])) {
+            throw new Error(`Ip address ${ip} is not valid`)
+          }
+        } else {
+          if (!IP_REGEX.test(ip)) {
+            throw new Error(`Ip address ${ip} is not valid`)
+          }
         }
       }
     }
