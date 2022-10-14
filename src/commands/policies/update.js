@@ -14,7 +14,7 @@ const updatePolicy = async (chain, newPolicy, options) => {
     const routers = getRouterByOption(options)
     if (!routers.length) return
     for (const router of routers) {
-      const res = await fetch(`http://${router.ip}:5000/policy/${table}/${chain}`, {
+      const res = await fetch(`http://${router.ip}:${router.port}/policy/${table}/${chain}`, {
         method: 'put',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({

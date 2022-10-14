@@ -5,11 +5,11 @@ const ruleConfig = require('../../config/rules')
 let routers = routerConfig.get('routers')
 
 const addRouter = async (options) => {
-  let {ip, name, routerSync, tableSync, chainSync} = options
-  console.log( routerSync, tableSync, chainSync)
+  let {ip, name, port, routerSync, tableSync, chainSync} = options
   routerSync = routerSync || ''
   tableSync = tableSync || ''
   chainSync = chainSync || ''
+  port = port || 5000
   const IP_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
   if (!name) {
     throw new Error('Require router name')
@@ -66,13 +66,13 @@ const addRouter = async (options) => {
         for (const table of syncTables) {
           console.log(`\t Start sync with table ${table}`)
           if (!chainSync.length) {
-            res = await fetch(`http://${router.ip}:5000/rules/${table}`)
+            res = await fetch(`http://${router.ip}:${router.port}/rules/${table}`)
             data = await res.json()
             if (Object.keys(data)) {
               for (const chain in data) {
                 if (defaultChains[table].find(item => item === chain)) {
                   console.log(`\t\t Start sync with chain ${chain}`)
-                  await fetch(`http://${ip}:5000/rules/${table}/${chain}`, {
+                  await fetch(`http://${ip}:${router.port}/rules/${table}/${chain}`, {
                     method: 'post',
                     body: JSON.stringify({ data: data[chain].map(item => ({
                       ...item,
@@ -85,11 +85,11 @@ const addRouter = async (options) => {
               }
             }
           } else {
-            res = await fetch(`http://${router.ip}:5000/rules/${table}`)
+            res = await fetch(`http://${router.ip}:${router.port}/rules/${table}`)
             data = await res.json()
             for (const chain of syncChains) {
               console.log(`\t\t Start sync with chain ${chain}`)
-              await fetch(`http://${ip}:5000/rules/${table}/${chain}`, {
+              await fetch(`http://${ip}:${router.port}/rules/${table}/${chain}`, {
                 method: 'post',
                 body: JSON.stringify({ data: data[chain].map(item => ({
                   ...item,
@@ -111,7 +111,7 @@ const addRouter = async (options) => {
     }
   }
   routers.push({
-    ip, name
+    ip, name, port
   })
   routerConfig.set('routers', routers)
   // ruleConfig.set(name, {
@@ -129,7 +129,7 @@ const addRouter = async (options) => {
   //   }
   // })
   // console.log(router)
-  return 'Add new router successfully'
+  console.log('Add new router successfully')
 }
 
 module.exports = addRouter

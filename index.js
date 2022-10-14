@@ -7,6 +7,7 @@ const addRouter = require('./src/commands/router/add')
 const listsRouter = require('./src/commands/router/list')
 const deleteRouter = require('./src/commands/router/delete')
 const flushRouter = require('./src/commands/router/flush')
+const { updateRouterPort } = require('./src/commands/router/update')
 
 const appendRule = require('./src/commands/rules/append')
 const deleteRule = require('./src/commands/rules/delete')
@@ -28,6 +29,7 @@ addCommand
   .description('Add new router')
   .option('-n, --name <string>', 'router unique name')
   .option('-ip, --ip <string>', 'router unique ip')
+  .option('-p, --port <number>', 'port that the agent will run on')
   .option('--router-sync <string>', 'sync rule from a router or list of routers seperated by comma')
   .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
@@ -153,6 +155,14 @@ updateCommand
   .option('-rip, --router-ip <string>', 'exact router ip')
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .action(updatePolicy)
+
+updateCommand
+  .command('router')
+  .description('Update configuration for specific router')
+  .option('-rn, --router-name <string>', 'exact router name need to update')
+  .option('-rip, --router-ip <string>', 'exact router ip need to update')
+  .option('-p, --port <number>', 'new port that agent will run on')
+  .action(updateRouterPort)
 
 try {
   program.parse();

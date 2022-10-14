@@ -66,7 +66,7 @@ const listRule = async (args, options) => {
   if (!routers.length) return
   try {
     for (const router of routers) {
-      const res = await fetch(`http://${router.ip}:5000/rules/${table}${args ? '/' + args  : ''}`)
+      const res = await fetch(`http://${router.ip}:${router.port}/rules/${table}${args ? '/' + args  : ''}`)
       const data = await res.json()
       if (res.status == 500) {
         console.log(data?.message)

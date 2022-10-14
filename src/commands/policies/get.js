@@ -10,7 +10,7 @@ const getPolicy = async (args, options) => {
     const routers = getRouterByOption(options)
     if (!routers.length) return
     for (const router of routers) {
-      const res = await fetch(`http://${router.ip}:5000/policy/${table}/${args}`)
+      const res = await fetch(`http://${router.ip}:${router.port}/policy/${table}/${args}`)
       const data = await res.json()
       if (res.status == 500) {
         console.log(data?.message)

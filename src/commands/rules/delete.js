@@ -16,7 +16,7 @@ const deleteRule = async (chainName, ruleOrder, options) => {
   if (!isNaN(ruleOrder)) {
     res += ruleOrder
     for (const router of filterRouters) {
-      const response = await fetch(`http://${router.ip}:5000/rules/${options['table']  || 'filter'}/${chainName}/${ruleOrder}`, {
+      const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${chainName}/${ruleOrder}`, {
         method: 'delete',
       })
       if (response.status == 200) {

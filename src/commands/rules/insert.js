@@ -32,7 +32,7 @@ const insertRule = async (chainName, ruleOrder, options) => {
   console.log(rule)
   let filterRouters = getRouterByOption(options)
   for (const router of filterRouters) {
-    const response = await fetch(`http://${router.ip}:5000/rules/${options['table']  || 'filter'}/${chainName}`, {
+    const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${chainName}`, {
       method: 'post',
       body: JSON.stringify({
         data: [rule],

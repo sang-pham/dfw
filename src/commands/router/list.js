@@ -14,8 +14,8 @@ const listRouters = (options) => {
   }
   if (routers.length) {
     console.log(routers.reduce((res, previousValue) => {
-      return res + `${previousValue.name}\t\t${previousValue.ip}\n`
-    }, "Name\t\tIp\n"))
+      return res + `${previousValue.name}\t\t${previousValue.ip}\t\t${previousValue.port}\n`
+    }, "Name\t\tIp\t\tPort\n"))
   }
   return routers
 }
