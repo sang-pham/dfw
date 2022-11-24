@@ -25,12 +25,12 @@ const addCommand = program
   .description('Use help for more options with add')
 
 addCommand
-  .command('router')
-  .description('Add new router')
-  .option('-n, --name <string>', 'router unique name')
-  .option('-ip, --ip <string>', 'router unique ip')
+  .command('firewall')
+  .description('Add new firewall')
+  .option('-n, --name <string>', 'firewall unique name')
+  .option('-ip, --ip <string>', 'firewall unique ip')
   .option('-p, --port <number>', 'port that the agent will run on')
-  .option('--router-sync <string>', 'sync rule from a router or list of routers seperated by comma')
+  .option('--firewall-sync <string>', 'sync rule from a firewall or list of firewalls seperated by comma')
   .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
   .action(addRouter)
@@ -39,7 +39,7 @@ addCommand
   .command('chain')
   .argument('<chainName>')
   .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
-  .option('-rn, --router-name <string>', 'router to add chain')
+  .option('-fn, --firewall-name <string>', 'firewall to add chain')
   .action(newChain)
 
 
@@ -48,10 +48,10 @@ const listCommand = program
   .description('Use help for more options with list')
 
 listCommand
-  .command('router')
-  .description('List config routers')
-  .option('-n, --name <string>', 'exact router name')
-  .option('-ip, --ip <string>', 'exact router ip')
+  .command('firewall')
+  .description('List config firewalls')
+  .option('-n, --name <string>', 'exact firewall name')
+  .option('-ip, --ip <string>', 'exact firewall ip')
   .action(listsRouter)
 
 const deleteCommand = program
@@ -59,17 +59,17 @@ const deleteCommand = program
   .description('Use help for more options with delete')
 
 deleteCommand
-  .command('router')
-  .description('Delete router')
-  .option('-n, --name <string>', 'exact router name')
-  .option('-ip, --ip <string>', 'exact router ip')
+  .command('firewall')
+  .description('Delete firewall')
+  .option('-n, --name <string>', 'exact firewall name')
+  .option('-ip, --ip <string>', 'exact firewall ip')
   .action(deleteRouter)
 
 deleteCommand
   .command('chain')
   .argument('<chainName>')
   .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
-  .option('-rn, --router-name <string>', 'router to add chain')
+  .option('-fn, --firewall-name <string>', 'firewall to add chain')
   .action(deleteChain)
 
 const flushCommand = program
@@ -77,8 +77,8 @@ const flushCommand = program
   .description('Use help for more options with flush')
 
 flushCommand
-  .command('router')
-  .description('Flush all router config')
+  .command('firewall')
+  .description('Flush all firewall config')
   .action(flushRouter)
 
 // program.option('-j, --jump')
@@ -93,8 +93,8 @@ function loadRuleOption(command) {
   command.option('-i, --in-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-o, --out-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-t, --table <string>', 'table to manipulate (default: \`filter\`)')
-  command.option('-rn, --router-name <string>', 'List of router by name that rule will be sent to')
-  command.option('-rip, --router-ip <string>', 'List of router by ip that rule will be sent to')
+  command.option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
+  command.option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
 }
 
 const appendRuleCommand = program
@@ -125,10 +125,10 @@ loadRuleOption(insertRuleCommand)
 
 const listRuleCommand = program
   .command('L')
-  .description('List all rule. Options: by router/table/chain')
+  .description('List all rule. Options: by firewall/table/chain')
   .argument('[chain]')
-  .option('-rn, --router-name <string>', 'List of rule in router by name')
-  .option('-rip, --router-ip <string>', 'List of rule in router by ip')
+  .option('-fn, --firewall-name <string>', 'List of rule in firewall by name')
+  .option('-fip, --firewall-ip <string>', 'List of rule in firewall by ip')
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .option('--line-numbers', 'List with rule order')
   .action(listRule)
@@ -139,8 +139,8 @@ getCommand
   .command('policy')
   .description('Get policy from specific chain')
   .argument('<chain>')
-  .option('-rn, --router-name <string>', 'exact router name')
-  .option('-rip, --router-ip <string>', 'exact router ip')
+  .option('-fn, --firewall-name <string>', 'exact firewall name')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .action(getPolicy)
 
@@ -151,16 +151,16 @@ updateCommand
   .description('Update policy for specific chain')
   .argument('<chain>')
   .argument('<new-policy>')
-  .option('-rn, --router-name <string>', 'exact router name')
-  .option('-rip, --router-ip <string>', 'exact router ip')
+  .option('-fn, --firewall-name <string>', 'exact firewall name')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .action(updatePolicy)
 
 updateCommand
-  .command('router')
-  .description('Update configuration for specific router')
-  .option('-rn, --router-name <string>', 'exact router name need to update')
-  .option('-rip, --router-ip <string>', 'exact router ip need to update')
+  .command('firewall')
+  .description('Update configuration for specific firewall')
+  .option('-fn, --firewall-name <string>', 'exact firewall name need to update')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
   .option('-p, --port <number>', 'new port that agent will run on')
   .action(updateRouterPort)
 
