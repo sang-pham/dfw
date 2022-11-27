@@ -69,7 +69,9 @@ const listRule = async (args, options) => {
       const res = await fetch(`http://${router.ip}:${router.port}/rules/${table}${args ? '/' + args  : ''}`)
       const data = await res.json()
       if (res.status == 500) {
-        console.log(data?.message)
+        if (data) {
+          console.log(data.message)
+        }
       } else {
         // console.log(data)
         console.log(`Chain ${args} in router ${router.name} - ${router.ip}`)

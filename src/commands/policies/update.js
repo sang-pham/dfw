@@ -28,7 +28,8 @@ const updatePolicy = async (chain, newPolicy, options) => {
       }
     }
   } catch (error) {
-    console.log(error?.message || error)
+    if(error) console.log(error.message)
+    else console.log('Something wrong')
   }
 }
 
