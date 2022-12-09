@@ -18,8 +18,7 @@ const listRouters = (options) => {
       return res + `${previousValue.name}\t\t${previousValue.ip}\t\t${previousValue.port}\n`
     }, "Name\t\tIp\t\tPort\n"))
   }
-  process.exit()
-  // return routers
+  return routers
 }
 
 module.exports = listRouters

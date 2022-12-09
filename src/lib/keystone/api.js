@@ -6,7 +6,6 @@ require('dotenv').config()
 const AUTH_URL = process.env.AUTH_URL
 
 const getNewToken = async (body, password) => {
-  console.log(JSON.stringify(body))
   const response = await fetch(
     AUTH_URL + '/auth/tokens', 
     {
@@ -21,10 +20,9 @@ const getNewToken = async (body, password) => {
   }
   let data = await response.json()
   data = data['token']
-  const {expires_at, issued_at} = data
-  const timeDiff = secondDiffTime(issued_at, expires_at)
+  const {expires_at} = data
   const token = response.headers.get('X-Subject-Token')
-  setToken(token, timeDiff)
+  setToken(token, expires_at)
   const newUserData = {
     username: data.user.name,
     userId: data.user.id,

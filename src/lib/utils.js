@@ -1,4 +1,4 @@
-const { isUserConfigChange, getUserCache } = require('./cache/user.cache')
+const { isUserConfigChange, getUserCache, getToken } = require('./cache/user.cache')
 require('dotenv').config()
 
 const checkEnv = () => {
@@ -29,9 +29,10 @@ const checkCredentials = async () => {
       domain: process.env.DOMAIN,
       projectId: process.env.PROJECT_ID
     }
+    let token = await getToken()
     let isConfigChange = await isUserConfigChange(obj)
     let userCache = await getUserCache()
-    if (isConfigChange|| !userCache) return false
+    if (isConfigChange|| !userCache || !token) return false
     return true
   } catch (error) {
     throw error

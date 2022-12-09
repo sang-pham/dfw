@@ -1,7 +1,5 @@
-const { getUserCache, setUserCache, getToken, isUserConfigChange } = require('../cache/user.cache')
 const { checkCredentials } = require('../utils')
 const { getNewToken } = require('./api')
-const redisClient = require('../redis')
 
 const asyncGetScopedTokenByUsername = async (username, password, domain) => {
   domain = domain || 'Default'
@@ -60,7 +58,6 @@ const asyncGetTokenByUserId = async (userId, password) => {
 
 const authWrapper = async (cb) => {
   try {
-    await redisClient.connect()
     let result = await checkCredentials()
     if (result) {
       cb()

@@ -24,6 +24,7 @@ const getPolicy = require('./src/commands/policies/get')
 const updatePolicy = require('./src/commands/policies/update')
 
 const addNetwork = require('./src/commands/networks/new')
+const listNetwork = require('./src/commands/networks/list')
 
 const { authWrapper } = require('./src/lib/keystone')
 
@@ -78,6 +79,18 @@ const networkComamnd = program
 networkComamnd
   .command('add')
   .action(options => authWrapper(() => addNetwork(options)))
+
+networkComamnd
+  .command('list')
+  .option('--external', 'List external networks')
+  .option('--internal', 'List internal networks')
+  .option('--name <string>', 'List networks according to their name')
+  .option('--enable', 'List enabled networks')
+  .option('--disable', 'List disabled networks')
+  .option('--share', 'List networks shared between projects')
+  .option('--no-share', 'List networks not shared between projects')
+  .option('--status [string]', 'List networks according to their status (\'ACTIVE\', \'BUILD\', \'DOWN\', \'ERROR\')')
+  .action(options => authWrapper(() => listNetwork(options)))
 
 // CHAIN COMMANDS
 const chainCommand = program
