@@ -1,9 +1,9 @@
 const { getToken } = require('../../lib/cache/user.cache')
 const fetch = require('node-fetch')
 const { getNetworkKeyMap } = require('../../helper/mappingKey')
+const config = require('../../../config.json')
 
-require('dotenv').config()
-const NETWORK_URL = process.env.NETWORK_URL
+const NETWORK_URL = config['network_url']
 
 const beautifyNetworkOuputs = (networks) => {
   console.log('ID\t\t\t\t\tName\t\tSubnets')

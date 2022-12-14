@@ -1,9 +1,9 @@
 const fetch = require('node-fetch')
 const {setUserCache, setToken, getUserCache, getToken, revokeToken} = require('../cache/user.cache')
 const { secondDiffTime } = require('../../helper/time')
+const config = require('../../../config.json')
 
-require('dotenv').config()
-const AUTH_URL = process.env.AUTH_URL
+const AUTH_URL = config['auth_url']
 
 const getNewToken = async (body, password) => {
   const response = await fetch(

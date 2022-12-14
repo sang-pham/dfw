@@ -1,5 +1,6 @@
 const { checkCredentials } = require('../utils')
 const { getNewToken } = require('./api')
+const config = require('../../../config.json')
 
 const asyncGetScopedTokenByUsername = async (username, password, domain) => {
   domain = domain || 'Default'
@@ -63,11 +64,11 @@ const authWrapper = async (cb) => {
       cb()
       return
     } else {
-      const USERNAME = process.env.USERNAME
-      const USERID = process.env.USERID
-      const DOMAIN = process.env.DOMAIN
-      const PASSWORD = process.env.PASSWORD
-      const PROJECT_ID = process.env.PASSWORD
+      const USERNAME = config['user_name']
+      const USERID = config['user_id']
+      const DOMAIN = config['domain']
+      const PASSWORD = config['password']
+      const PROJECT_ID = config['project_id']
       console.log('get token')
       if (USERNAME) {
         await asyncGetScopedTokenByUsername(USERNAME, PASSWORD, DOMAIN, PROJECT_ID)
