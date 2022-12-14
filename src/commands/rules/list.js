@@ -9,7 +9,7 @@ const routers = routerConfig.get('routers')
 
 // const listRule = (args, options) => {
 //   if (!routers || !routers.length) {
-//     throw new Error('No router config yet')
+//     throw new Error('No firewall config yet')
 //   }
 //   let filterRouters = getRouterByOption(options)
 //   let table = options['table'] || 'filter'
@@ -57,10 +57,6 @@ const routers = routerConfig.get('routers')
 // }
 
 const listRule = async (args, options) => {
-  if (!args) {
-    console.log('Chain name must be specific')
-    return
-  }
   let table = options['table'] || 'filter'
   const routers = getRouterByOption(options)
   if (!routers.length) return
@@ -73,9 +69,16 @@ const listRule = async (args, options) => {
           console.log(data.message)
         }
       } else {
-        // console.log(data)
-        console.log(`Chain ${args} in router ${router.name} - ${router.ip}`)
-        formatRules(data, options)
+        if (!args) {
+          for (const key in data) {
+            console.log(`Chain ${key} in router ${router.name} - ${router.ip}`)
+            formatRules(data[key], options)
+            // console.log('\n')
+          }
+        } else {
+          console.log(`Chain ${args} in router ${router.name} - ${router.ip}`)
+          formatRules(data, options)
+        }
       }
     }
   } catch (error) {

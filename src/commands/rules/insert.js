@@ -6,8 +6,14 @@ const { dfwOptions2RuleObj } = require('../../helper/convertOptions')
 const getRouterByOption = require('../../helper/getRouterByOption')
 
 const insertRule = async (chainName, ruleOrder, options) => {
+  console.log(chainName, ruleOrder)
   if (!chainName) {
-    throw new Error('Chain must be specified')
+    console.log('Chain must be specified')
+    return
+  }
+  if(typeof chainName != 'string') {
+    console.log('Invalid chain name')
+    return
   }
   let res = `sudo iptables -I ${chainName} `
   if (ruleOrder) {
@@ -17,18 +23,7 @@ const insertRule = async (chainName, ruleOrder, options) => {
   if (options['jump']) {
     res += `-j ${options['jump']}`
   }
-  // console.log(res)
-  // saveRule({
-  //   chainName,
-  //   ruleOrder,
-  //   options,
-  //   type: 'insert',
-  //   rule: res
-  // })
-  // forwardRule(options, res)
-  // return res
   let rule = dfwOptions2RuleObj(options)
-  console.log(ruleOrder)
   console.log(rule)
   let filterRouters = getRouterByOption(options)
   for (const router of filterRouters) {
@@ -36,15 +31,19 @@ const insertRule = async (chainName, ruleOrder, options) => {
       method: 'post',
       body: JSON.stringify({
         data: [rule],
-        order: ruleOrder || -1
+        order: ruleOrder || 1
       }),
       headers: {'Content-Type': 'application/json'}
     })
     if (response.status == 200) {
       console.log(`Insert success for router ${router.name}`)
     } else {
-      let body = await response.json()
-      console.log((body.message || 'Something is wrong') + ` for router ${router.name}`)
+      try {
+        let body = await response.json()
+        console.log((body.message || 'Something is wrong') + ` for router ${router.name}`)
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }

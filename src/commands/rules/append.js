@@ -42,14 +42,17 @@ const appendRule = async (args, options) => {
     for (const router of filterRouters) {
       const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${args}`, {
         method: 'post',
-        body: JSON.stringify({data: [rule]}),
+        body: JSON.stringify({
+          data: [rule],
+          order: 0
+        }),
         headers: {'Content-Type': 'application/json'}
       })
       if (response.status == 200) {
-        console.log(`Append success for router ${router.name}`)
+        console.log(`Append success for firewall ${router.name}`)
       } else {
         let body = await response.json()
-        console.log((body.message || 'Something is wrong') + ` for router ${router.name}}`)
+        console.log((body.message || 'Something is wrong') + ` for firewall ${router.name}}`)
       }
     }
 

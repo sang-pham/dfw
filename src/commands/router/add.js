@@ -129,7 +129,7 @@ const addRouter = async (options) => {
   //   }
   // })
   // console.log(router)
-  console.log('Add new router successfully')
+  console.log('Add new firewall successfully')
 }
 
 module.exports = addRouter

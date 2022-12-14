@@ -7,7 +7,7 @@ const updateRouterPort = (options) => {
   try {
     const matchRouters = getRouterByOption(options)
     if (!matchRouters.length) {
-      console.log("No router matches with options")
+      console.log("No firewall matches with options")
       return
     }
     const { port } = options

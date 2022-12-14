@@ -35,6 +35,26 @@ const dfwOptions2RuleObj = (options) => {
         res[options['protocol']] = res[options['protocol']] || {}
         res[options['protocol']]['dport'] = value
         continue;
+      case "m":
+        res['module'] = value
+        res['m'] = value
+        // if (value == 'conntrack') {
+        //   res['conntrack'] = options['ctstate']
+        //   res['state'] = 'conntrack'
+        // }
+        continue;
+      case "state":
+        if (!options['m'] || options['m'] != 'state') {
+          throw new Error('No specify or invalid module name')
+        }
+        res['state'] = value
+        continue;
+      // case "ctstate":
+      //   if (!options['m'] || options['m'] != 'conntrack') {
+      //     throw new Error('No specify or invalid module name')
+      //   }
+      //   res['ctstate'] = value
+      //   continue;
     }
   }
   return res

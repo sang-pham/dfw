@@ -28,6 +28,13 @@ const listNetwork = require('./src/commands/networks/list')
 
 const { authWrapper } = require('./src/lib/keystone')
 
+// const ruleInsertHook = require('./src/hooks/rule-insert')
+
+program
+  .name('dfw')
+  .description('Multiple(Distributed) firewall management CLI tool')
+  .version('1.0.0')
+
 // FIREWALL COMMANDS
 const firewallCommand = program
   .command('firewall')
@@ -47,6 +54,7 @@ firewallCommand
 firewallCommand
   .command('list')
   .description('List config firewalls')
+  .option('--status', 'Use this option to check firewall agent status')
   .option('-n, --name <string>', 'exact firewall name')
   .option('-ip, --ip <string>', 'exact firewall ip')
   .action(options => authWrapper(() => listRouters(options)))
@@ -131,18 +139,43 @@ chainCommand
   .action(updatePolicy)
 
 // RULE MANAGEMENT COMMAND
-function loadRuleOption(command) {
+function loadRuleOption(command, callbacks) {
   command.option('-j, --jump <string>', 'target for rule (may load target extension)')
-  command.option('-p, --protocol <string>', 'protocol: by name, eg. \`tcp\`')
-  command.option('-s, --source <string>', 'source specification: list of address[/mask][...] separated by comma')
+  command.option('-p, --protocol [string]', 'protocol: by name, eg. \`tcp\`')
+  command.option('-s, --source [string]', 'source specification: list of address[/mask][...] separated by comma')
   command.option('-d, --destination <string>', 'destination specification: list of address[/mask][...] separated by comma')
-  command.option('-sport, --source-port <string>', 'source port number specification')
-  command.option('-dport, --destination-port <string>', 'source port number specification')
-  command.option('-i, --in-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
-  command.option('-o, --out-interface <string>', 'network interface name ([+] for wildcard) or list separate by comma')
-  command.option('-t, --table <string>', 'table to manipulate (default: \`filter\`)')
+  command.option('-sport, --source-port [string]', 'source port number specification')
+  command.option('-dport, --destination-port [string]', 'source port number specification')
+  command.option('-i, --in-interface [string]', 'network interface name ([+] for wildcard) or list separate by comma')
+  command.option('-o, --out-interface [string]', 'network interface name ([+] for wildcard) or list separate by comma')
+  command.option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
   command.option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
   command.option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  if (callbacks && callbacks.length) {
+    for (const c of callbacks) {
+      c(command)
+    }
+  }
+}
+
+function loadModuleOption(command) {
+  command.option('-m <string>', 'Specify the module name')
+}
+
+function loadStateManagementOption(command) {
+  const prevOptions = command.options.map(item => item.short)
+  const hasModuleOption = prevOptions.includes('-m')
+  if (hasModuleOption) {
+    command.option('--state <string>', 'List of connection state separated by command, which can be: NEW, ESTABLISHED, RELATED, INVALID')
+  }
+}
+
+function loadConnTrackOption(command) {
+  const prevOptions = command.options.map(item => item.short)
+  let hasModuleOption = prevOptions.includes('-m')
+  if (hasModuleOption) {
+    command.option('--ctstate <string>', 'List of connection state separated by command, which can be: NEW, ESTABLISHED, RELATED, INVALID')
+  }
 }
 
 const appendRuleCommand = program
@@ -151,7 +184,7 @@ const appendRuleCommand = program
   .argument('<chain>')
   .action(appendRule)
 
-loadRuleOption(appendRuleCommand)
+loadRuleOption(appendRuleCommand, [loadModuleOption, loadStateManagementOption])
 
 const deleteRuleCommand = program
   .command('D')
@@ -167,9 +200,10 @@ const insertRuleCommand = program
   .description('Insert rule to specific chain')
   .argument('<chain>')
   .argument('[rule-order]')
+  // .hook('preAction', ruleInsertHook.preActionInsert)
   .action(insertRule)
 
-loadRuleOption(insertRuleCommand)
+loadRuleOption(insertRuleCommand, [loadModuleOption, loadStateManagementOption])
 
 const listRuleCommand = program
   .command('L')
