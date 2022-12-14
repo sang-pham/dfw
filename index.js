@@ -2,9 +2,12 @@
 
 // const commander = require('commander')
 // const program = new commander.Command()
-const { program } = require('commander');
+
+// require('dotenv').config()
+
+const { program } = require('commander')
 const addRouter = require('./src/commands/router/add')
-const listsRouter = require('./src/commands/router/list')
+const listRouters = require('./src/commands/router/list')
 const deleteRouter = require('./src/commands/router/delete')
 const flushRouter = require('./src/commands/router/flush')
 const { updateRouterPort } = require('./src/commands/router/update')
@@ -20,12 +23,18 @@ const deleteChain = require('./src/commands/chains/delete')
 const getPolicy = require('./src/commands/policies/get')
 const updatePolicy = require('./src/commands/policies/update')
 
-const addCommand = program
-  .command('add')
-  .description('Use help for more options with add')
+const addNetwork = require('./src/commands/networks/new')
+const listNetwork = require('./src/commands/networks/list')
 
-addCommand
+const { authWrapper } = require('./src/lib/keystone')
+
+// FIREWALL COMMANDS
+const firewallCommand = program
   .command('firewall')
+  .description('Use -h for more options with firewall command')
+
+firewallCommand
+  .command('add')
   .description('Add new firewall')
   .option('-n, --name <string>', 'firewall unique name')
   .option('-ip, --ip <string>', 'firewall unique ip')
@@ -35,54 +44,93 @@ addCommand
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
   .action(addRouter)
 
-addCommand
-  .command('chain')
-  .argument('<chainName>')
-  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
-  .option('-fn, --firewall-name <string>', 'firewall to add chain')
-  .action(newChain)
-
-
-const listCommand = program
+firewallCommand
   .command('list')
-  .description('Use help for more options with list')
-
-listCommand
-  .command('firewall')
   .description('List config firewalls')
   .option('-n, --name <string>', 'exact firewall name')
   .option('-ip, --ip <string>', 'exact firewall ip')
-  .action(listsRouter)
+  .action(options => authWrapper(() => listRouters(options)))
 
-const deleteCommand = program
+firewallCommand
   .command('delete')
-  .description('Use help for more options with delete')
-
-deleteCommand
-  .command('firewall')
   .description('Delete firewall')
   .option('-n, --name <string>', 'exact firewall name')
   .option('-ip, --ip <string>', 'exact firewall ip')
   .action(deleteRouter)
 
-deleteCommand
-  .command('chain')
-  .argument('<chainName>')
-  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
-  .option('-fn, --firewall-name <string>', 'firewall to add chain')
-  .action(deleteChain)
-
-const flushCommand = program
+firewallCommand
   .command('flush')
-  .description('Use help for more options with flush')
-
-flushCommand
-  .command('firewall')
   .description('Flush all firewall config')
   .action(flushRouter)
 
-// program.option('-j, --jump')
+firewallCommand
+  .command('update')
+  .description('Update configuration for specific firewall')
+  .option('-fn, --firewall-name <string>', 'exact firewall name need to update')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
+  .option('-p, --port <number>', 'new port that agent will run on')
+  .action(updateRouterPort)
 
+// NETWORK COMMANDS 
+const networkComamnd = program
+  .command('network')
+  .description('Use -h for more options with firewall command')
+
+networkComamnd
+  .command('add')
+  .action(options => authWrapper(() => addNetwork(options)))
+
+networkComamnd
+  .command('list')
+  .option('--external', 'List external networks')
+  .option('--internal', 'List internal networks')
+  .option('--name <string>', 'List networks according to their name')
+  .option('--enable', 'List enabled networks')
+  .option('--disable', 'List disabled networks')
+  .option('--share', 'List networks shared between projects')
+  .option('--no-share', 'List networks not shared between projects')
+  .option('--status [string]', 'List networks according to their status (\'ACTIVE\', \'BUILD\', \'DOWN\', \'ERROR\')')
+  .action(options => authWrapper(() => listNetwork(options)))
+
+// CHAIN COMMANDS
+const chainCommand = program
+  .command('chain')
+  .description('Use -h for more options with chain command')
+
+chainCommand
+  .command('add')
+  .argument('<chainName>')
+  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
+  .option('-fn, --firewall-name <string>', 'firewall to add chain')
+  .action(newChain)
+
+chainCommand
+  .command('delete')
+  .argument('<chainName>')
+  .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
+  .option('-fn, --firewall-name <string>', 'firewall to delete chain')
+  .action(deleteChain)
+
+chainCommand
+  .command('get-policy')
+  .description('Get policy from specific chain')
+  .argument('<chain>')
+  .option('-fn, --firewall-name <string>', 'exact firewall name')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
+  .option('-t, --table <string>', 'Table name to get policy (default: \`filter\`)')
+  .action(getPolicy)
+
+chainCommand
+  .command('update-pocily')
+  .description('Update policy for specific chain')
+  .argument('<chain>')
+  .argument('<new-policy>')
+  .option('-fn, --firewall-name <string>', 'exact firewall name')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
+  .option('-t, --table <string>', 'Table name to update policy (default: \`filter\`)')
+  .action(updatePolicy)
+
+// RULE MANAGEMENT COMMAND
 function loadRuleOption(command) {
   command.option('-j, --jump <string>', 'target for rule (may load target extension)')
   command.option('-p, --protocol <string>', 'protocol: by name, eg. \`tcp\`')
@@ -132,37 +180,6 @@ const listRuleCommand = program
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .option('--line-numbers', 'List with rule order')
   .action(listRule)
-
-const getCommand = program.command('get').description('Use -h for more information for get command')
-
-getCommand
-  .command('policy')
-  .description('Get policy from specific chain')
-  .argument('<chain>')
-  .option('-fn, --firewall-name <string>', 'exact firewall name')
-  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
-  .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
-  .action(getPolicy)
-
-const updateCommand = program.command('update').description('Use -h for more information for update command')
-
-updateCommand
-  .command('policy')
-  .description('Update policy for specific chain')
-  .argument('<chain>')
-  .argument('<new-policy>')
-  .option('-fn, --firewall-name <string>', 'exact firewall name')
-  .option('-fip, --firewall-ip <string>', 'exact firewall ip')
-  .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
-  .action(updatePolicy)
-
-updateCommand
-  .command('firewall')
-  .description('Update configuration for specific firewall')
-  .option('-fn, --firewall-name <string>', 'exact firewall name need to update')
-  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
-  .option('-p, --port <number>', 'new port that agent will run on')
-  .action(updateRouterPort)
 
 try {
   program.parse();

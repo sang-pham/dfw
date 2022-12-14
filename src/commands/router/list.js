@@ -3,6 +3,7 @@ const routerConfig = require('../../config/routers')
 let routers = routerConfig.get('routers')
 
 const listRouters = (options) => {
+  console.log(options)
   if (!routers || !routers.length) {
     throw new Error('No router config yet')
   }
