@@ -1,6 +1,4 @@
 const generateOption = require('../../helper/generateOption')
-const forwardRule = require('../../helper/forwardRoute')
-const saveRule = require('../../helper/saveRule')
 const fetch = require('node-fetch')
 const { dfwOptions2RuleObj } = require('../../helper/convertOptions')
 const getRouterByOption = require('../../helper/getRouterByOption')

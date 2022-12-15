@@ -1,6 +1,5 @@
 const fetch = require('node-fetch')
 const routerConfig = require('../../config/routers')
-const ruleConfig = require('../../config/rules')
 
 let routers = routerConfig.get('routers')
 
@@ -114,21 +113,6 @@ const addRouter = async (options) => {
     ip, name, port
   })
   routerConfig.set('routers', routers)
-  // ruleConfig.set(name, {
-  //   filter: {
-  //     FORWARD: [],
-  //     INPUT: [],
-  //     OUTPUT: []
-  //   },
-  //   nat: {
-  //     FORWARD: [],
-  //     INPUT: [],
-  //     OUTPUT: [],
-  //     POSTROUTING: [],
-  //     PREROUTING: []
-  //   }
-  // })
-  // console.log(router)
   console.log('Add new firewall successfully')
 }
 

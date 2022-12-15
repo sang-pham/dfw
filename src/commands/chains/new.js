@@ -1,27 +1,44 @@
-const ruleConfig = require('../../config/rules')
 const getRouterByOption = require('../../helper/getRouterByOption')
+const fetch = require('node-fetch')
 
 const DEFAULT_CHAIN = ['FORWARD', 'INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING']
 
-const newChain = (chainName, options) => {
+const newChain = async (chainName, options) => {
+  if (!chainName) {
+    console.log(`Chain name must be provided`)
+    return
+  }
   if (DEFAULT_CHAIN.find(item => item == chainName)) {
-    throw new Error('Invalid chain name')
+    console.log('Invalid chain name because it has already been default')
+    return
   }
   const table = options['table'] || 'filter'
   const filterRouters = getRouterByOption(options)
   for (const router of filterRouters) {
-    let routerSetting = ruleConfig.get(router.name)
-    if (routerSetting) {
-      if(!routerSetting[table]) {
-        throw new Error('Invalid table')
+    try {
+      const response = await fetch(
+        `http://${router.ip}:${router.port}/chains`,
+        {
+          method: 'post',
+          body: JSON.stringify({
+            data: {
+              table,
+              chain: chainName
+            }
+          }),
+          headers: {'Content-Type': 'application/json'}
+        }
+      )
+      const data = await response.json()
+      let { message } = data
+      console.log(`Firewall ${router.name}-${router.ip}:${router.port}: ${message}`)
+    } catch (error) {
+      if (error.code == 'ECONNREFUSED') {
+        console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+        continue
       }
-      let chains = routerSetting[table]
-      if (Object.keys(chains).find(item => item === chainName)) {
-        throw new Error('Exist chain')
-      }
-      chains[chainName] = []
+      console.log(error)
     }
-    ruleConfig.set(router.name, routerSetting)
   }
 }
 

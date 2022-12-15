@@ -1,27 +1,38 @@
-const ruleConfig = require('../../config/rules')
 const DEFAULT_CHAIN = ['FORWARD', 'INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING']
 const getRouterByOption = require('../../helper/getRouterByOption')
+const fetch = require('node-fetch')
 
-const deleteChain = (chainName, options) => {
+const deleteChain = async (chainName, options) => {
+  if (!chainName) {
+    console.log('Chain name must be provided')
+    return
+  }
   if (DEFAULT_CHAIN.find(item => item == chainName)) {
-    throw new Error('Invalid chain name')
+    console.lo(`Chain ${chainName} cann't be deleted because it's default iptables chain`)
+    return
   }
   const table = options['table'] || 'filter'
+  let isFlush = options['flush']
   const filterRouters = getRouterByOption(options)
   for (const router of filterRouters) {
-    let routerSetting = ruleConfig.get(router.name)
-    if (routerSetting) {
-      if(!routerSetting[table]) {
-        throw new Error('Invalid table')
+    try {
+      const response = await fetch(
+        `http://${router.ip}:${router.port}/chains/${table}/${chainName}?${isFlush ? 'is_flush=1': ''}`,
+        {
+          method: 'delete',
+          headers: {'Content-Type': 'application/json'}
+        }
+      )
+      const data = await response.json()
+      let { message } = data
+      console.log(`Firewall ${router.name}-${router.ip}:${router.port}: ${message}`)
+    } catch (error) {
+      if (error.code == 'ECONNREFUSED') {
+        console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+        continue
       }
-      let chains = routerSetting[table]
-      let idx = Object.keys(chains).indexOf(chainName)
-      if (idx < 0) {
-        throw new Error('Not exist chain')
-      }
-      delete chains[chainName]
+      console.log(error)
     }
-    ruleConfig.set(router.name, routerSetting)
   }
 }
 

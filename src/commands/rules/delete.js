@@ -1,6 +1,4 @@
 const generateOption = require('../../helper/generateOption')
-const forwardRule = require('../../helper/forwardRoute')
-const saveRule = require('../../helper/saveRule')
 const fetch = require('node-fetch')
 const getRouterByOption = require('../../helper/getRouterByOption')
 
@@ -30,13 +28,6 @@ const deleteRule = async (chainName, ruleOrder, options) => {
   } else {
     res += generateOption(options)
   }
-  saveRule({
-    chainName,
-    ruleOrder,
-    options,
-    type: 'delete'
-  })
-  forwardRule(options, res)
   return res
 }
 

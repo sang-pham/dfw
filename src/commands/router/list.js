@@ -5,7 +5,8 @@ let routers = routerConfig.get('routers')
 
 const listRouters = async (options) => {
   if (!routers || !routers.length) {
-    throw new Error('No firewall config yet')
+    console.log('No firewall config yet')
+    return
   }
   if (options['name']) {
     routers = routers.filter(item => item.name === options['name'])

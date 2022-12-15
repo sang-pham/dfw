@@ -1,5 +1,9 @@
 // Cache environment variables - if change => revoke user token and other informations
 const fs = require('fs')
+const path = require('path')
+
+const userJsonPath = path.join(__dirname, '..', '..', 'user.json')
+const tokenJsonPath = path.join(__dirname, '..', '..', 'token.json')
 
 const writeFile = async (destPath, data) => {
   return new Promise((resolve, reject) => {
@@ -14,7 +18,7 @@ const writeFile = async (destPath, data) => {
 }
 
 const setUserCache = async ({username, domain, userId, password, projectId}) => {
-  await writeFile(`${process.cwd()}/user.json`, JSON.stringify({
+  await writeFile(userJsonPath, JSON.stringify({
     username,
     password,
     domain,
@@ -24,9 +28,9 @@ const setUserCache = async ({username, domain, userId, password, projectId}) => 
 }
 
 const getUserCache = async () => {
-  if (!fs.existsSync(`${process.cwd()}/user.json`)) return null
+  if (!fs.existsSync(userJsonPath)) return null
   return new Promise((resolve, reject) => {
-    fs.readFile(`${process.cwd()}/user.json`, (err, data) => {
+    fs.readFile(userJsonPath, (err, data) => {
       if (err) {
         reject(err)
       } else {
@@ -42,7 +46,7 @@ const getUserCache = async () => {
 }
 
 const isUserConfigChange = async ({username, domain, password, projectId}) => {
-  if (!fs.existsSync(`${process.cwd()}/user.json`)) return true
+  if (!fs.existsSync(userJsonPath)) return true
   let user = await getUserCache()
   if (!user) return true
   else {
@@ -54,7 +58,7 @@ const isUserConfigChange = async ({username, domain, password, projectId}) => {
 
 const revokeToken = async () => {
   return new Promise((resolve, reject) => {
-    fs.writeFile(`${process.cwd()}/token.json`, JSON.stringify({}), err => {
+    fs.writeFile(tokenJsonPath, JSON.stringify({}), err => {
       if(err) {
         reject(err)
       } else {
@@ -66,7 +70,7 @@ const revokeToken = async () => {
 
 const setToken = async (token, expired_at) => {
   return new Promise((resolve, reject) => {
-    fs.writeFile(`${process.cwd()}/token.json`, JSON.stringify({token, expired_at}), err => {
+    fs.writeFile(tokenJsonPath, JSON.stringify({token, expired_at}), err => {
       if(err) {
         reject(err)
       } else {
@@ -77,9 +81,9 @@ const setToken = async (token, expired_at) => {
 }
 
 const getToken = async () => {
-  if (!fs.existsSync(`${process.cwd()}/token.json`)) return null
+  if (!fs.existsSync(tokenJsonPath)) return null
   return new Promise((resolve, reject) => {
-    fs.readFile(`${process.cwd()}/token.json`, (err, data) => {
+    fs.readFile(tokenJsonPath, (err, data) => {
       if (err) {
         reject(err)
       } else {

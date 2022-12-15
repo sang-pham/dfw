@@ -57,7 +57,7 @@ firewallCommand
   .option('--status', 'Use this option to check firewall agent status')
   .option('-n, --name <string>', 'exact firewall name')
   .option('-ip, --ip <string>', 'exact firewall ip')
-  .action(options => authWrapper(() => listRouters(options)))
+  .action(listRouters)
 
 firewallCommand
   .command('delete')
@@ -110,6 +110,7 @@ chainCommand
   .argument('<chainName>')
   .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
   .option('-fn, --firewall-name <string>', 'firewall to add chain')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
   .action(newChain)
 
 chainCommand
@@ -117,6 +118,8 @@ chainCommand
   .argument('<chainName>')
   .option('-t, --table <string>', 'table to add chain (default: \`filter\`)')
   .option('-fn, --firewall-name <string>', 'firewall to delete chain')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
+  .option('-f, --flush', 'Flush all rules before delete chain')
   .action(deleteChain)
 
 chainCommand
