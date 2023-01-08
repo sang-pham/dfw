@@ -4,8 +4,8 @@ const routerConfig = require('../../config/routers')
 let routers = routerConfig.get('routers')
 
 const addRouter = async (options) => {
-  let {ip, name, port, routerSync, tableSync, chainSync} = options
-  routerSync = routerSync || ''
+  let {ip, name, port, firewallSync, tableSync, chainSync} = options
+  firewallSync = firewallSync || ''
   tableSync = tableSync || ''
   chainSync = chainSync || ''
   port = port || 5000
@@ -25,14 +25,14 @@ const addRouter = async (options) => {
   if (routers.find(r => r.name === name || r.ip === ip)) {
     throw new Error('Deplicate router name or router ip')
   }
-  if (routerSync.length) {
-    let syncRouters = routerSync.split(",")
-    for (const rs of syncRouters) {
+  if (firewallSync.length) {
+    let syncFirewalls = firewallSync.split(",")
+    for (const rs of syncFirewalls) {
       if (!routers.find(r => r.name === rs)) {
         throw new Error(`Can't find router ${rs}`)
       }
     }
-    syncRouters = syncRouters.map(router => routers.find(r => r.name === router))
+    syncFirewalls = syncFirewalls.map(router => routers.find(r => r.name === router))
     const defaultTables = ['filter', 'nat', 'mangle']
     let syncTables = tableSync.split(",")
     for (const table of syncTables) {
@@ -60,7 +60,7 @@ const addRouter = async (options) => {
     }
     try {
       let res, data;
-      for (const router of syncRouters) {
+      for (const router of syncFirewalls) {
         console.log(`Start sync with router ${router.name}'s rules`)
         for (const table of syncTables) {
           console.log(`\t Start sync with table ${table}`)
