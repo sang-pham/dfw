@@ -16,9 +16,11 @@ const appendRule = require('./src/commands/rules/append')
 const deleteRule = require('./src/commands/rules/delete')
 const insertRule = require('./src/commands/rules/insert')
 const listRule = require('./src/commands/rules/list')
+const flushRule = require('./src/commands/rules/flush')
 
 const newChain = require('./src/commands/chains/new')
 const deleteChain = require('./src/commands/chains/delete')
+const zeroRule = require('./src/commands/chains/zero')
 
 const getPolicy = require('./src/commands/policies/get')
 const updatePolicy = require('./src/commands/policies/update')
@@ -197,6 +199,24 @@ const deleteRuleCommand = program
   .action(deleteRule)
 
 loadRuleOption(deleteRuleCommand)
+
+const flushRuleCommand = program
+  .command('F')
+  .description('Flush rules for specific chain, table or all')
+  .argument('[chain]')
+  .option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
+  .option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
+  .option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  .action(flushRule)
+
+const zeroRuleCommand = program
+  .command('Z')
+  .description('Zero packet and byte counters for specific chain, table or all')
+  .argument('[chain]')
+  .option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
+  .option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
+  .option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  .action(zeroRule)
 
 const insertRuleCommand = program
   .command('I')
