@@ -17,6 +17,7 @@ const deleteRule = require('./src/commands/rules/delete')
 const insertRule = require('./src/commands/rules/insert')
 const listRule = require('./src/commands/rules/list')
 const flushRule = require('./src/commands/rules/flush')
+const { dumpRules } = require('./src/commands/rules/dump') 
 
 const newChain = require('./src/commands/chains/new')
 const deleteChain = require('./src/commands/chains/delete')
@@ -237,6 +238,22 @@ const listRuleCommand = program
   .option('-t, --table <string>', 'List of rule in table (default: \`filter\`)')
   .option('--line-numbers', 'List with rule order')
   .action(listRule)
+
+//DUMP command
+const dumpCommand = program
+  .command('dump')
+  .description('Use -h for more options with dump command')
+
+dumpCommand
+  .command('rules')
+  .description('Dump rules to file')
+  .option('-fn, --firewall-name <string>', 'List of rule in firewall by name')
+  .option('-fip, --firewall-ip <string>', 'List of rule in firewall by ip')
+  .option('-c', 'Keep track the byte and packet counter values')
+  .option('-t, --table <string>', 'Indicate which table to save that contains rules and chains. By default, all the tables are saved.')
+  .option('--save', 'Allow saving rules to file with path')
+  .option('-p, --path <string>', 'Path which file will be saved. Default is the location command running at')
+  .action(dumpRules)
 
 try {
   program.parse();
