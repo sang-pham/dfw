@@ -5,7 +5,7 @@ const fs = require('fs')
 const dumpRules = async (options) => {
   const routers = getRouterByOption(options)
   const save = options['save']
-  const keepTrack = options['c']
+  const keepTrack = options['counters']
   const table = options['table']
   let query = ''
   if (keepTrack) {

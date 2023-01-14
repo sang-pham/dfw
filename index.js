@@ -18,6 +18,7 @@ const insertRule = require('./src/commands/rules/insert')
 const listRule = require('./src/commands/rules/list')
 const flushRule = require('./src/commands/rules/flush')
 const { dumpRules } = require('./src/commands/rules/dump') 
+const importRules = require('./src/commands/rules/import')
 
 const newChain = require('./src/commands/chains/new')
 const deleteChain = require('./src/commands/chains/delete')
@@ -247,13 +248,29 @@ const dumpCommand = program
 dumpCommand
   .command('rules')
   .description('Dump rules to file')
-  .option('-fn, --firewall-name <string>', 'List of rule in firewall by name')
-  .option('-fip, --firewall-ip <string>', 'List of rule in firewall by ip')
-  .option('-c', 'Keep track the byte and packet counter values')
+  .option('-fn, --firewall-name <string>', 'List of firewall name whose rules will be exported.')
+  .option('-fip, --firewall-ip <string>', 'List of firewall ip whose rules will be exported.')
+  .option('-c, --counters', 'Keep track the byte and packet counter values')
   .option('-t, --table <string>', 'Indicate which table to save that contains rules and chains. By default, all the tables are saved.')
-  .option('--save', 'Allow saving rules to file with path')
-  .option('-p, --path <string>', 'Path which file will be saved. Default is the location command running at')
+  .option('--save', 'Allow to save rules to file with path')
+  .option('-p, --path <string>', 'File path will be saved. By default, path is the location command running at')
   .action(dumpRules)
+
+//IMPORT command
+const importCommand = program
+  .command('import')
+  .description('Use -h for more options with import command')
+
+importCommand
+  .command('rules')
+  .description('Import rules from file to firewall(s)')
+  .option('-fn, --firewall-name <string>', 'List of firewall name whose rules will be imported.')
+  .option('-fip, --firewall-ip <string>', 'List of firewall ip whose rules will be imported.')
+  .option('-c, --counters', 'Keep track the byte and packet counter values')
+  .option('-t, --table <string>', 'Indicate which table to import that contains rules and chains. By default, all the tables will be imported.')
+  .option('-n, --noflush', 'Don\'t flush rules before import.')
+  .option('-p, --path <string>', 'File path contains rules to import.')
+  .action(importRules)
 
 try {
   program.parse();
