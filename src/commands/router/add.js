@@ -1,38 +1,40 @@
 const fetch = require('node-fetch')
 const routerConfig = require('../../config/routers')
 
-let routers = routerConfig.get('routers')
+let firewalls = routerConfig.get('routers')
 
 const addRouter = async (options) => {
-  let {ip, name, port, firewallSync, tableSync, chainSync} = options
+  let {ip, name, port, firewallSync, tableSync, chainSync, network} = options
   firewallSync = firewallSync || ''
   tableSync = tableSync || ''
   chainSync = chainSync || ''
   port = port || 5000
   const IP_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
   if (!name) {
-    throw new Error('Require router name')
+    throw new Error('Require firewall name')
+  } else if (name.length > 16) {
+    throw new Error('Firewall name must in length 16')
   }
   if (!ip) {
-    throw new Error('Required router ip')
+    throw new Error('Required firewall ip')
   }
   if (!IP_REGEX.test(ip)) {
     throw new Error('Invalid IP address')
   }
-  if (!routers) {
-    routers = []
+  if (!firewalls) {
+    firewalls = []
   }
-  if (routers.find(r => r.name === name || r.ip === ip)) {
-    throw new Error('Deplicate router name or router ip')
+  if (firewalls.find(r => r.name === name || r.ip === ip)) {
+    throw new Error('Deplicate firewall name or firewall ip')
   }
   if (firewallSync.length) {
     let syncFirewalls = firewallSync.split(",")
     for (const rs of syncFirewalls) {
-      if (!routers.find(r => r.name === rs)) {
-        throw new Error(`Can't find router ${rs}`)
+      if (!firewalls.find(r => r.name === rs)) {
+        throw new Error(`Can't find firewall ${rs}`)
       }
     }
-    syncFirewalls = syncFirewalls.map(router => routers.find(r => r.name === router))
+    syncFirewalls = syncFirewalls.map(firewall => firewalls.find(r => r.name === firewall))
     const defaultTables = ['filter', 'nat', 'mangle']
     let syncTables = tableSync.split(",")
     for (const table of syncTables) {
@@ -60,18 +62,18 @@ const addRouter = async (options) => {
     }
     try {
       let res, data;
-      for (const router of syncFirewalls) {
-        console.log(`Start sync with router ${router.name}'s rules`)
+      for (const firewall of syncFirewalls) {
+        console.log(`Start sync with firewall ${firewall.name}'s rules`)
         for (const table of syncTables) {
           console.log(`\t Start sync with table ${table}`)
           if (!chainSync.length) {
-            res = await fetch(`http://${router.ip}:${router.port}/rules/${table}`)
+            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`)
             data = await res.json()
             if (Object.keys(data)) {
               for (const chain in data) {
                 if (defaultChains[table].find(item => item === chain)) {
                   console.log(`\t\t Start sync with chain ${chain}`)
-                  await fetch(`http://${ip}:${router.port}/rules/${table}/${chain}`, {
+                  await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
                     method: 'post',
                     body: JSON.stringify({ data: data[chain].map(item => ({
                       ...item,
@@ -84,11 +86,11 @@ const addRouter = async (options) => {
               }
             }
           } else {
-            res = await fetch(`http://${router.ip}:${router.port}/rules/${table}`)
+            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`)
             data = await res.json()
             for (const chain of syncChains) {
               console.log(`\t\t Start sync with chain ${chain}`)
-              await fetch(`http://${ip}:${router.port}/rules/${table}/${chain}`, {
+              await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
                 method: 'post',
                 body: JSON.stringify({ data: data[chain].map(item => ({
                   ...item,
@@ -101,7 +103,7 @@ const addRouter = async (options) => {
           }
           console.log(`\tComplete sync with table ${table}`)
         }
-        console.log(`Complete sync with router ${router.name}'s rules`)
+        console.log(`Complete sync with firewall ${firewall.name}'s rules`)
       }
       console.log('DONE')
     } catch (error) {
@@ -109,10 +111,10 @@ const addRouter = async (options) => {
       throw new Error(error.message)
     }
   }
-  routers.push({
+  firewalls.push({
     ip, name, port
   })
-  routerConfig.set('routers', routers)
+  routerConfig.set('routers', firewalls)
   console.log('Add new firewall successfully')
 }
 

@@ -10,7 +10,7 @@ const addRouter = require('./src/commands/router/add')
 const listRouters = require('./src/commands/router/list')
 const deleteRouter = require('./src/commands/router/delete')
 const flushRouter = require('./src/commands/router/flush')
-const { updateRouterPort } = require('./src/commands/router/update')
+const { updateFirewall } = require('./src/commands/router/update')
 
 const appendRule = require('./src/commands/rules/append')
 const deleteRule = require('./src/commands/rules/delete')
@@ -46,10 +46,11 @@ const firewallCommand = program
 
 firewallCommand
   .command('add')
-  .description('Add new firewall')
+  .description('Add new firewall. You can use network options to specify the managed network.')
   .option('-n, --name <string>', 'firewall unique name')
   .option('-ip, --ip <string>', 'firewall unique ip')
   .option('-p, --port <number>', 'port that the agent will run on')
+  .option('-n, --network <string>', 'Specify network managed by this new firewall.')
   .option('--firewall-sync <string>', 'sync rule from a firewall or list of firewalls seperated by comma')
   .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
@@ -78,10 +79,11 @@ firewallCommand
 firewallCommand
   .command('update')
   .description('Update configuration for specific firewall')
-  .option('-fn, --firewall-name <string>', 'exact firewall name need to update')
-  .option('-fip, --firewall-ip <string>', 'exact firewall ip need to update')
+  .option('-fn, --firewall-name <string>', 'exact firewall name that need to update')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip that need to update')
   .option('-p, --port <number>', 'new port that agent will run on')
-  .action(updateRouterPort)
+  .option('-n, --network <string>', 'Specify new network managed by this firewall.')
+  .action(updateFirewall)
 
 // NETWORK COMMANDS 
 const networkComamnd = program
@@ -156,8 +158,8 @@ function loadRuleOption(command, callbacks) {
   command.option('-i, --in-interface [string]', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-o, --out-interface [string]', 'network interface name ([+] for wildcard) or list separate by comma')
   command.option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
-  command.option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
-  command.option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  command.option('-fn, --firewall-name <string>', 'List of firewall by name to filter')
+  command.option('-fip, --firewall-ip <string>', 'List of firewall by ip to filter')
   if (callbacks && callbacks.length) {
     for (const c of callbacks) {
       c(command)
@@ -189,6 +191,9 @@ const appendRuleCommand = program
   .command('A')
   .description('Append rule to specific chain')
   .argument('<chain>')
+  // .option('-fn, --firewall-name <string>', 'exact firewall name or list seperated by comma')
+  // .option('-fip, --firewall-ip <string>', 'exact firewall ip or list seperated by comma')
+  // .option('-t, --table <string>', 'Table name to update policy (default: \`filter\`)')
   .action(appendRule)
 
 loadRuleOption(appendRuleCommand, [loadModuleOption, loadStateManagementOption])
@@ -207,8 +212,8 @@ const flushRuleCommand = program
   .description('Flush rules for specific chain, table or all')
   .argument('[chain]')
   .option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
-  .option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
-  .option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  .option('-fn, --firewall-name <string>', 'List of firewall by name to filter')
+  .option('-fip, --firewall-ip <string>', 'List of firewall by ip to filter')
   .action(flushRule)
 
 const zeroRuleCommand = program
@@ -216,8 +221,8 @@ const zeroRuleCommand = program
   .description('Zero packet and byte counters for specific chain, table or all')
   .argument('[chain]')
   .option('-t, --table [string]', 'table to manipulate (default: \`filter\`)')
-  .option('-fn, --firewall-name <string>', 'List of firewall by name that rule will be sent to')
-  .option('-fip, --firewall-ip <string>', 'List of firewall by ip that rule will be sent to')
+  .option('-fn, --firewall-name <string>', 'List of firewall by name to filter')
+  .option('-fip, --firewall-ip <string>', 'List of firewall by ip to filter')
   .action(zeroRule)
 
 const insertRuleCommand = program
@@ -248,8 +253,8 @@ const dumpCommand = program
 dumpCommand
   .command('rules')
   .description('Dump rules to file')
-  .option('-fn, --firewall-name <string>', 'List of firewall name whose rules will be exported.')
-  .option('-fip, --firewall-ip <string>', 'List of firewall ip whose rules will be exported.')
+  .option('-fn, --firewall-name <string>', 'List of firewall name to filter.')
+  .option('-fip, --firewall-ip <string>', 'List of firewall ip to filter.')
   .option('-c, --counters', 'Keep track the byte and packet counter values')
   .option('-t, --table <string>', 'Indicate which table to save that contains rules and chains. By default, all the tables are saved.')
   .option('--save', 'Allow to save rules to file with path')

@@ -3,7 +3,7 @@ const getRouterByOption = require('../../helper/getRouterByOption')
 
 let routers = routerConfig.get('routers')
 
-const updateRouterPort = (options) => {
+const updateFirewall = (options) => {
   try {
     const matchRouters = getRouterByOption(options)
     if (!matchRouters.length) {
@@ -16,12 +16,12 @@ const updateRouterPort = (options) => {
       foundRouter.port = port
     }
     routerConfig.set('routers', routers)
-    console.log('Update new port successfully')
+    console.log('Update firewall successfully')
   } catch (error) {
     console.log(error)
   }
 }
 
 module.exports = {
-  updateRouterPort
+  updateFirewall
 }
