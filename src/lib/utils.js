@@ -283,6 +283,31 @@ const getLargestFirewalls = function(firewalls) {
   return firewalls[idx]
 }
 
+// this method will return inclusively 2 input firewalls 
+const getIntermediateFirewalls = function(firewall1, firewall2, firewalls) {
+  let [startRangeFw1, endRangeFw1] = cidr2Range(firewall1.network).map(item => ip2Number(item))
+  let [startRangeFw2, endRangeFw2] = cidr2Range(firewall2.network).map(item => ip2Number(item))
+  if ((startRangeFw1 > startRangeFw2 && endRangeFw1 < endRangeFw2)
+    || (startRangeFw1 < startRangeFw2 && startRangeFw1 > endRangeFw2)) {
+    throw new Error('Invalid range for 2 input firewalls')
+  }
+  let minStartRange = Math.min(startRangeFw1, startRangeFw2),
+    maxStartRange = Math.max(startRangeFw1, startRangeFw2),
+    minEndRange = Math.min(endRangeFw1, endRangeFw2),
+    maxEndRange = Math.max(endRangeFw1, endRangeFw2),
+    result = []
+  for (const firewall of firewalls) {
+    let [startRange, endRange] = cidr2Range(firewall.network).map(item => ip2Number(item))
+    if (
+      minStartRange <= startRange && startRange <= maxStartRange &&
+      minEndRange <= endRange && endRange <= maxEndRange
+    ) {
+      result.push(firewall)
+    }
+  }
+  return result
+}
+
 const autoIdentifyFirewalls = (ruleOptions, chainName, tableName, firewalls) => {
   switch(tableName) {
     case 'nat':
@@ -307,14 +332,15 @@ const identifyFirewalls4Filter = (ruleOptions, chainName, firewalls) => {
 }
 
 const identifyFirewalls4Nat = (ruleOptions, chainName, firewalls) => {
+  return firewalls
 }
 
-const identifyFw4FilterInput = (ruleOptions) => {
-  const {source, destination} = ruleOptions
+const identifyFw4FilterInput = (ruleOptions, firewalls) => {
+  return firewalls
 }
 
-const identifyFw4FilterOutput = (ruleOptions) => {
-
+const identifyFw4FilterOutput = (ruleOptions, firewalls) => {
+  return firewalls
 }
 
 const identifyFw4FilterForward = (ruleOptions, firewalls) => {
@@ -393,7 +419,135 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
     }
     return result
   } else {
+    let result = []
+    // start find network relations
+    let isSingleSource = constant.IP_REGEX.test(source)
+    let isSingleDest = constant.IP_REGEX.test(destination)
+    let sourceManagedFirewall = null, sourceEqualFirewalls = [], sourceSuperFirewalls = []
+    let infoResult = null
+    if (isSingleSource) {
+      infoResult = findRelateInfoByIp(source, validFirewalls)
+    } else {
+      infoResult = findRelateInfoByNetwork(source, validFirewalls)
+    }
+    sourceManagedFirewall = infoResult.managedFirewall
+    sourceEqualFirewalls = infoResult.equalFirewalls
+    sourceSuperFirewalls = infoResult.superFirewalls
+    let destManagedFirewall = null, destEqualFirewalls = [], destSuperFirewalls = []
+    infoResult = null
+    if (isSingleDest) {
+      infoResult = findRelateInfoByIp(destination, validFirewalls)
+    } else {
+      infoResult = findRelateInfoByNetwork(destination, validFirewalls)
+    }
+    destManagedFirewall = infoResult.managedFirewall
+    destEqualFirewalls = infoResult.equalFirewalls
+    destSuperFirewalls = infoResult.superFirewalls
+    // end find network relations
 
+    // if both network aren't found => return empty firewalls
+    if (!sourceManagedFirewall && !destManagedFirewall) {
+      return []
+    } else if (sourceManagedFirewall && !destManagedFirewall) {
+      // find only source network 
+      switch(target) {
+        // CASE: ACCEPT action => return source network, equal networks and super networks
+        case constant.RULE_ACTION.ACCEPT:
+          return [
+            sourceManagedFirewall,
+            ...sourceEqualFirewalls,
+            ...sourceSuperFirewalls
+          ]
+        // CASE: DROP | REJECT action => return source network and equal networks
+        case constant.RULE_ACTION.DROP:
+        case constant.RULE_ACTION.REJECT:
+          return {
+            sourceManagedFirewall,
+            ...sourceEqualFirewalls
+          }
+      }
+    } else if (!sourceManagedFirewall && destManagedFirewall) {
+      // find only dest network
+      switch(target) {
+        // CASE: ACCEPT action => return dest network, equal networks and its super networks
+        case constant.RULE_ACTION.ACCEPT:
+          return [
+            destManagedFirewall,
+            ...destEqualFirewalls,
+            ...destSuperFirewalls
+          ]
+        // CASE: DROP | REJECT action 
+        case constant.RULE_ACTION.DROP:
+        case constant.RULE_ACTION.REJECT:
+          // REJECT at most-upstream firewall
+          if (destSuperFirewalls.length) {
+            let largestSuperFw = getLargestFirewalls(destManagedFirewall)
+            if (largestSuperFw) {
+              return [largestSuperFw]
+            }
+          } else {
+            // just REJECT at dest network and its equal networks
+            return [
+              destManagedFirewall,
+              ...destEqualFirewalls
+            ]
+          }        
+      }
+  
+    } else {
+      switch(target) {
+        case "ACCEPT":
+          let netRelation1 = checkNetworkRelations({
+            net1: sourceManagedFirewall.network,
+            net2: destManagedFirewall.network
+          })
+          if (netRelation1 == `net1-${constant.NETWORK_RELATIONS.SUBSET}-net2`) {
+            // return all networks on path from source to dest(inclusive)
+            result = getIntermediateFirewalls(
+              sourceManagedFirewall, destManagedFirewall, validFirewalls
+            )
+          } else if (netRelation1 == `net1-${constant.NETWORK_RELATIONS.SUPERSET}-net2`) {
+            // return all networks on path from dest to source(inclusive)
+            result = getIntermediateFirewalls(
+              sourceManagedFirewall, destManagedFirewall, firewalls
+            )
+          } else {
+            // return both firewalls
+            result = [
+              sourceManagedFirewall,
+              ...sourceEqualFirewalls,
+              destManagedFirewall,
+              ...destEqualFirewalls
+            ]
+          }
+          break;
+        case "DROP":
+        case "REJECT":
+          let netRelation = checkNetworkRelations({
+            net1: sourceManagedFirewall.network,
+            net2: destManagedFirewall.network
+          })
+          if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUBSET}-net2`) {
+            result = [
+              sourceManagedFirewall,
+              ...sourceEqualFirewalls
+            ]
+          } else if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUPERSET}-net2`) {
+            //return the largest child of source network <-> return the most super net of dest network, exclude source network
+            result = getLargestFirewalls(destSuperFirewalls.filter(item => item.network != sourceManagedFirewall.network))
+          } else {
+            result = [
+              sourceManagedFirewall,
+              ...sourceEqualFirewalls,
+              destManagedFirewall,
+              ...destEqualFirewalls
+            ]
+          }
+          break;
+      }
+    }
+
+    return result
   }
 }
 
@@ -404,5 +558,6 @@ module.exports = {
   checkIpInNetwork,
   getSupersetNet,
   findRelateInfoByIp,
-  findRelateInfoByNetwork
+  findRelateInfoByNetwork,
+  getIntermediateFirewalls
 }
