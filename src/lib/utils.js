@@ -336,6 +336,72 @@ const identifyFirewalls4Nat = (ruleOptions, chainName, firewalls) => {
 }
 
 const identifyFw4FilterInput = (ruleOptions, firewalls) => {
+  const {source, destination, jump: target} = ruleOptions
+
+  const validFirewalls = firewalls.filter(item => item.network && checkValidNetwork(item.network))
+
+  if (!source && !destination) {
+    return firewalls
+  } else if (source && !destination) {
+    let isSingleSource = constant.IP_REGEX.test(source)
+    let managedFirewall = null, equalFirewalls = []
+    let infoResult = null
+    if (isSingleSource) {
+      infoResult = findRelateInfoByIp(source, validFirewalls)
+    } else {
+      infoResult = findRelateInfoByNetwork(source, validFirewalls)
+    }
+    managedFirewall = infoResult.managedFirewall
+    equalFirewalls = infoResult.equalFirewalls
+    if (!managedFirewall) {
+      return validFirewalls
+    } else {
+      return [
+        managedFirewall,
+        ...equalFirewalls
+      ]
+    }
+  } else if (!source && destination) {
+    let isSingleDest = constant.IP_REGEX.test(destination)
+    if (!isSingleDest) {
+      throw new Error(`Invalid destination value: ${destination}`)
+    }
+    let destFirewall = firewalls.find(item => item.ip == destination)
+    if (destFirewall) {
+      return [destFirewall]
+    } else {
+      return []
+    }
+  } else {
+    let isSingleDest = constant.IP_REGEX.test(destination)
+    if (!isSingleDest) {
+      throw new Error(`Invalid destination value: ${destination}`)
+    }
+    let isSingleSource = constant.IP_REGEX.test(source)
+    let sourceManagedFirewall = null, sourceEqualFirewalls = []
+    let infoResult = null
+    if (isSingleSource) {
+      infoResult = findRelateInfoByIp(source, validFirewalls)
+    } else {
+      infoResult = findRelateInfoByNetwork(source, validFirewalls)
+    }
+    sourceManagedFirewall = infoResult.managedFirewall
+    sourceEqualFirewalls = infoResult.equalFirewalls
+    let destFirewall = firewalls.find(item => item.ip == destination)
+    if (!sourceManagedFirewall && !destFirewall) {
+      return []
+    } else if (sourceManagedFirewall && !destFirewall) {
+      return [
+        sourceManagedFirewall,
+        ...sourceEqualFirewalls
+      ]
+    } else if (!sourceManagedFirewall && destFirewall) {
+      return [destFirewall]
+    } else {
+      return [destFirewall]
+    }
+  }
+
   return firewalls
 }
 

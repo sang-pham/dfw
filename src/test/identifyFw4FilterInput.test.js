@@ -11,35 +11,33 @@ const firewalls = [
 ]
 
 const test1 = () => utils.autoIdentifyFirewalls({
-  source: '192.168.191.0/26',
   jump: constant.RULE_ACTION.DROP
-}, 'FORWARD', 'filter', firewalls)
+}, 'INPUT', 'filter', firewalls)
 
 const test2 = () => utils.autoIdentifyFirewalls({
-  destination: '192.168.191.0/25',
+  source: '192.168.191.0/26',
   jump: constant.RULE_ACTION.DROP
-}, 'FORWARD', 'filter', firewalls)
+}, 'INPUT', 'filter', firewalls)
 
 const test3 = () => utils.autoIdentifyFirewalls({
-  source: '192.168.191.10',
-  destination: '192.168.191.253',
+  destination: '192.168.191.4',
   jump: constant.RULE_ACTION.DROP
-}, 'FORWARD', 'filter', firewalls)
+}, 'INPUT', 'filter', firewalls)
 
 const testUtils = () => {
   const obj = {
-    1: test1,
-    2: test2,
-    3: test3
+    test1,
+    test2,
+    test3
   }
   for (const key in obj) {
     try {
-      console.log(`Start test ${key}`)
-      console.log(`Result of test ${key}: ${JSON.stringify(obj[key]())}`)
+      console.log(`Start ${key}`)
+      console.log(`Result of ${key}: ${JSON.stringify(obj[key]())}`)
     } catch (error) {
       console.log(error)
     } finally {
-      console.log(`End test ${key}\n`)
+      console.log(`End ${key}\n`)
     }
   }
 }
