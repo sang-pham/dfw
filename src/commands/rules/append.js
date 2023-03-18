@@ -3,6 +3,7 @@ const generateOptions = require('../../helper/generateOption')
 const fetch = require('node-fetch')
 const { dfwOptions2RuleObj } = require('../../helper/convertOptions')
 const getRouterByOption = require('../../helper/getRouterByOption')
+const { autoIdentifyFirewalls } = require('../../lib/utils')
 
 const appendRule = async (args, options) => {
   try {
@@ -26,6 +27,9 @@ const appendRule = async (args, options) => {
     let rule = dfwOptions2RuleObj(options)
     console.log(rule)
     let filterRouters = getRouterByOption(options)
+    if (!options['firewallName'] && !options['firewallIp']) {
+      filterRouters = autoIdentifyFirewalls(options, args, options['table']  || 'filter', filterRouters)
+    }
     for (const router of filterRouters) {
       const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${args}`, {
         method: 'post',

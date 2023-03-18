@@ -401,12 +401,35 @@ const identifyFw4FilterInput = (ruleOptions, firewalls) => {
       return [destFirewall]
     }
   }
-
-  return firewalls
 }
 
 const identifyFw4FilterOutput = (ruleOptions, firewalls) => {
-  return firewalls
+  let {source, destination } = ruleOptions
+  const validFirewalls = firewalls.filter(item => item.network && checkValidNetwork(item.network))
+  if (!source && !destination) {
+    return firewalls
+  } else if (!source && destination) {
+    return firewalls
+  } else {
+    let isSingleSource = constant.IP_REGEX.test(source)
+    if (isSingleSource) {
+      let firewall = firewalls.find(item => item.ip == source)
+      if (!firewall) return validFirewalls
+      return [firewall]
+    } else {
+      let res = validFirewalls.filter(item => {
+        return checkIpInNetwork({
+          ip: item.ip,
+          network: source
+        })
+      })
+      if (res.length) {
+        return res
+      } else {
+        return validFirewalls
+      }
+    }
+  }
 }
 
 const identifyFw4FilterForward = (ruleOptions, firewalls) => {

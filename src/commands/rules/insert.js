@@ -2,6 +2,7 @@ const generateOption = require('../../helper/generateOption')
 const fetch = require('node-fetch')
 const { dfwOptions2RuleObj } = require('../../helper/convertOptions')
 const getRouterByOption = require('../../helper/getRouterByOption')
+const { autoIdentifyFirewalls } = require('../../lib/utils')
 
 const insertRule = async (chainName, ruleOrder, options) => {
   console.log(chainName, ruleOrder)
@@ -13,17 +14,12 @@ const insertRule = async (chainName, ruleOrder, options) => {
     console.log('Invalid chain name')
     return
   }
-  let res = `sudo iptables -I ${chainName} `
-  if (ruleOrder) {
-    res += ruleOrder + ' '
-  }
-  res += generateOption(options)
-  if (options['jump']) {
-    res += `-j ${options['jump']}`
-  }
   let rule = dfwOptions2RuleObj(options)
   console.log(rule)
   let filterRouters = getRouterByOption(options)
+  if (!options['firewallName'] && !options['firewallIp']) {
+    filterRouters = autoIdentifyFirewalls(options, chainName, options['table']  || 'filter', filterRouters)
+  }
   for (const router of filterRouters) {
     const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${chainName}`, {
       method: 'post',
