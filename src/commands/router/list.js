@@ -27,13 +27,13 @@ const listRouters = async (options) => {
 }
 
 const listRoutersWithStatus = async (routers) => {
-  let res = "Name\t\tIp\t\tPort\tNetwork\tStatus\n"
+  let res = "Name\t\tIp\t\tPort\tNetwork\t\t\tStatus\n"
   for (const router of routers) {
     try {
       const response = await fetch(`http://${router.ip}:${router.port}/test-connection`)
-      res += `${router.name}\t\t${router.ip}\t${router.port}\t${router.network || ''}\t${response.status == 200 ? 'Alive': 'Down'}`
+      res += `${router.name}\t\t${router.ip}\t${router.port}\t${router.network || ''}\t\t${response.status == 200 ? 'Alive': 'Down'}`
     } catch (error) {
-      res += `${router.name}\t\t${router.ip}\t${router.port}\t${router.network || ''}\tDown`
+      res += `${router.name}\t\t${router.ip}\t${router.port}\t${router.network || ''}\t\tDown`
     }
   }
   return res

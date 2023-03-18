@@ -50,7 +50,7 @@ firewallCommand
   .option('-n, --name <string>', 'firewall unique name')
   .option('-ip, --ip <string>', 'firewall unique ip')
   .option('-p, --port <number>', 'port that the agent will run on')
-  .option('-n, --network <string>', 'Specify network managed by this new firewall.')
+  .option('-net, --network <string>', 'Specify network managed by this new firewall.')
   .option('--firewall-sync <string>', 'sync rule from a firewall or list of firewalls seperated by comma')
   .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
@@ -82,7 +82,7 @@ firewallCommand
   .option('-fn, --firewall-name <string>', 'exact firewall name that need to update')
   .option('-fip, --firewall-ip <string>', 'exact firewall ip that need to update')
   .option('-p, --port <number>', 'new port that agent will run on')
-  .option('-n, --network <string>', 'Specify new network managed by this firewall.')
+  .option('-net, --network <string>', 'Specify new network managed by this firewall.')
   .action(updateFirewall)
 
 // NETWORK COMMANDS 

@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
 const routerConfig = require('../../config/routers')
+const { checkValidNetwork } = require('../../lib/utils')
 
 let firewalls = routerConfig.get('routers')
 
@@ -9,23 +10,34 @@ const addRouter = async (options) => {
   tableSync = tableSync || ''
   chainSync = chainSync || ''
   port = port || 5000
+  network = network || ''
   const IP_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-  if (!name) {
-    throw new Error('Require firewall name')
-  } else if (name.length > 16) {
-    throw new Error('Firewall name must in length 16')
-  }
-  if (!ip) {
-    throw new Error('Required firewall ip')
-  }
-  if (!IP_REGEX.test(ip)) {
-    throw new Error('Invalid IP address')
-  }
-  if (!firewalls) {
-    firewalls = []
-  }
-  if (firewalls.find(r => r.name === name || r.ip === ip)) {
-    throw new Error('Deplicate firewall name or firewall ip')
+  try {
+    if (!name) {
+      throw new Error('Require firewall name')
+    } else if (name.length > 16) {
+      throw new Error('Firewall name must in length 16')
+    }
+    if (!ip) {
+      throw new Error('Required firewall ip')
+    }
+    if (!IP_REGEX.test(ip)) {
+      throw new Error('Invalid IP address')
+    }
+    if (network) {
+      if (!checkValidNetwork(network)) {
+        throw new Error('Invalid network ip')
+      }
+    }
+    if (!firewalls) {
+      firewalls = []
+    }
+    if (firewalls.find(r => r.name === name || r.ip === ip)) {
+      throw new Error('Deplicate firewall name or firewall ip')
+    }
+  } catch (error) {
+    console.log(error.message)
+    return
   }
   if (firewallSync.length) {
     let syncFirewalls = firewallSync.split(",")
@@ -112,7 +124,7 @@ const addRouter = async (options) => {
     }
   }
   firewalls.push({
-    ip, name, port
+    ip, name, port, network
   })
   routerConfig.set('routers', firewalls)
   console.log('Add new firewall successfully')

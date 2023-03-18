@@ -643,6 +643,7 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
 module.exports = {
   checkCredentials,
   checkEnv,
+  checkValidNetwork,
   autoIdentifyFirewalls,
   checkIpInNetwork,
   getSupersetNet,

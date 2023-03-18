@@ -10,10 +10,15 @@ const updateFirewall = (options) => {
       console.log("No firewall matches with options")
       return
     }
-    const { port } = options
+    const { port, network } = options
     for (const r of matchRouters) {
       let foundRouter = routers.find(_r => r.name === r.name)
-      foundRouter.port = port
+      if (port) {
+        foundRouter.port = port
+      }
+      if (network) {
+        foundRouter.network = network
+      }
     }
     routerConfig.set('routers', routers)
     console.log('Update firewall successfully')
