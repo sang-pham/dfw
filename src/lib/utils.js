@@ -271,6 +271,7 @@ const findRelateInfoByNetwork = (network, firewalls) => {
 
 const getLargestFirewalls = function(firewalls) {
   const rangeList = firewalls.map(item => cidr2Range(item.network).map(i => ip2Number(i)))
+  if (!rangeList.length || !rangeList[0] || !rangeList[0].length) return []
   let maxRange = rangeList[0][1] - rangeList[0][0]
   let idx = 0
   for (let i = 1; i < rangeList.length; i++) {
@@ -570,7 +571,7 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
         case constant.RULE_ACTION.REJECT:
           // REJECT at most-upstream firewall
           if (destSuperFirewalls.length) {
-            let largestSuperFw = getLargestFirewalls(destManagedFirewall)
+            let largestSuperFw = getLargestFirewalls(destSuperFirewalls)
             if (largestSuperFw) {
               return [largestSuperFw]
             }
@@ -612,27 +613,31 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
           break;
         case "DROP":
         case "REJECT":
-          let netRelation = checkNetworkRelations({
-            net1: sourceManagedFirewall.network,
-            net2: destManagedFirewall.network
-          })
-          if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUBSET}-net2`) {
-            result = [
-              sourceManagedFirewall,
-              ...sourceEqualFirewalls
-            ]
-          } else if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUPERSET}-net2`) {
-            //return the largest child of source network <-> return the most super net of dest network, exclude source network
-            result = getLargestFirewalls(destSuperFirewalls.filter(item => item.network != sourceManagedFirewall.network))
-          } else {
-            result = [
-              sourceManagedFirewall,
-              ...sourceEqualFirewalls,
-              destManagedFirewall,
-              ...destEqualFirewalls
-            ]
-          }
-          break;
+          // let netRelation = checkNetworkRelations({
+          //   net1: sourceManagedFirewall.network,
+          //   net2: destManagedFirewall.network
+          // })
+          // if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUBSET}-net2`) {
+          //   result = [
+          //       sourceManagedFirewall,
+          //     ...sourceEqualFirewalls
+          //   ]
+          // } else if (netRelation == `net1-${constant.NETWORK_RELATIONS.SUPERSET}-net2`) {
+          //   //return the largest child of source network <-> return the most super net of dest network, exclude source network
+          //   result = getLargestFirewalls(destSuperFirewalls.filter(item => item.network != sourceManagedFirewall.network))
+          // } else {
+          //   result = [
+          //     sourceManagedFirewall,
+          //     ...sourceEqualFirewalls,
+          //     destManagedFirewall,
+          //     ...destEqualFirewalls
+          //   ]
+          // }
+          // break;
+          return [
+            sourceManagedFirewall,
+            ...sourceEqualFirewalls
+          ]
       }
     }
 
