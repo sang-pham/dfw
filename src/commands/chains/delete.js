@@ -8,7 +8,7 @@ const deleteChain = async (chainName, options) => {
     return
   }
   if (DEFAULT_CHAIN.find(item => item == chainName)) {
-    console.lo(`Chain ${chainName} cann't be deleted because it's default iptables chain`)
+    console.log(`Chain ${chainName} cann't be deleted because it's default iptables chain`)
     return
   }
   const table = options['table'] || 'filter'
@@ -20,9 +20,15 @@ const deleteChain = async (chainName, options) => {
         `http://${router.ip}:${router.port}/chains/${table}/${chainName}?${isFlush ? 'is_flush=1': ''}`,
         {
           method: 'delete',
-          headers: {'Content-Type': 'application/json'}
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
         }
       )
+      if (response.status == 401) {
+        throw new Error(`Invalid API key with firewall ${router.name}`)
+      }
       const data = await response.json()
       let { message } = data
       console.log(`Firewall ${router.name}-${router.ip}:${router.port}: ${message}`)
@@ -31,7 +37,7 @@ const deleteChain = async (chainName, options) => {
         console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
         continue
       }
-      console.log(error)
+      console.log(error.message || error)
     }
   }
 }

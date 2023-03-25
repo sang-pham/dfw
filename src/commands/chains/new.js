@@ -26,9 +26,15 @@ const newChain = async (chainName, options) => {
               chain: chainName
             }
           }),
-          headers: {'Content-Type': 'application/json'}
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
         }
       )
+      if (response.status == 401) {
+        throw new Error(`Invalid API key with firewall ${router.name}`)
+      }
       const data = await response.json()
       let { message } = data
       console.log(`Firewall ${router.name}-${router.ip}:${router.port}: ${message}`)
@@ -37,7 +43,7 @@ const newChain = async (chainName, options) => {
         console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
         continue
       }
-      console.log(error)
+      console.log(error.message || error)
     }
   }
 }

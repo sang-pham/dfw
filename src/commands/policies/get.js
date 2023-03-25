@@ -10,14 +10,25 @@ const getPolicy = async (args, options) => {
     const routers = getRouterByOption(options)
     if (!routers.length) return
     for (const router of routers) {
-      const res = await fetch(`http://${router.ip}:${router.port}/policy/${table}/${args}`)
-      const data = await res.json()
-      if (res.status == 500) {
-        if (data) {
-          console.log(data.message)
+      try {
+        const res = await fetch(`http://${router.ip}:${router.port}/policy/${table}/${args}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
+        })
+        const data = await res.json()
+        if (res.status == 500) {
+          if (data) {
+            console.log(data.message)
+          }
+        } else if (res.status == 401) {
+          throw new Error(`Invalid API key with firewall ${router.name}`)
+        } else {
+          console.log(`Chain ${args}'s policy in router ${router.name} - ${router.ip}: ${data.policy}`)
         }
-      } else {
-        console.log(`Chain ${args}'s policy in router ${router.name} - ${router.ip}: ${data.policy}`)
+      } catch (error) {
+        console.log(error.message || error)
       }
     }
   } catch (error) {

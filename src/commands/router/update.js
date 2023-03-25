@@ -11,6 +11,9 @@ const updateFirewall = (options) => {
       return
     }
     const { port, network } = options
+    if (!port && !network) {
+      throw new Error('Either port or network must be specified')
+    }
     for (const r of matchRouters) {
       let foundRouter = routers.find(_r => r.name === r.name)
       if (port) {
@@ -23,7 +26,7 @@ const updateFirewall = (options) => {
     routerConfig.set('routers', routers)
     console.log('Update firewall successfully')
   } catch (error) {
-    console.log(error)
+    console.log(error.message)
   }
 }
 

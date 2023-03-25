@@ -31,19 +31,28 @@ const appendRule = async (args, options) => {
       filterRouters = autoIdentifyFirewalls(options, args, options['table']  || 'filter', filterRouters)
     }
     for (const router of filterRouters) {
-      const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${args}`, {
-        method: 'post',
-        body: JSON.stringify({
-          data: [rule],
-          order: 0
-        }),
-        headers: {'Content-Type': 'application/json'}
-      })
-      if (response.status == 200) {
-        console.log(`Append success for firewall ${router.name}`)
-      } else {
-        let body = await response.json()
-        console.log((body.message || 'Something is wrong') + ` for firewall ${router.name}}`)
+      try {
+        const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${args}`, {
+          method: 'post',
+          body: JSON.stringify({
+            data: [rule],
+            order: 0
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
+        })
+        if (response.status == 200) {
+          console.log(`Append success for firewall ${router.name}`)
+        } else if (response.status == 401) {
+          throw new Error(`Invalid API key with firewall ${router.name}`)
+        } else {
+          let body = await response.json()
+          console.log((body.message || 'Something is wrong') + ` for firewall ${router.name}}`)
+        }
+      } catch (error) {
+        console.log(error.message || error)
       }
     }
 

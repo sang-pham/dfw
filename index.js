@@ -11,6 +11,7 @@ const listRouters = require('./src/commands/router/list')
 const deleteRouter = require('./src/commands/router/delete')
 const flushRouter = require('./src/commands/router/flush')
 const { updateFirewall } = require('./src/commands/router/update')
+const resetKey = require('./src/commands/router/reset-key')
 
 const appendRule = require('./src/commands/rules/append')
 const deleteRule = require('./src/commands/rules/delete')
@@ -31,6 +32,7 @@ const addNetwork = require('./src/commands/networks/new')
 const listNetwork = require('./src/commands/networks/list')
 
 const { authWrapper } = require('./src/lib/keystone')
+const { randomKey } = require('./src/lib/utils')
 
 // const ruleInsertHook = require('./src/hooks/rule-insert')
 
@@ -54,6 +56,7 @@ firewallCommand
   .option('--firewall-sync <string>', 'sync rule from a firewall or list of firewalls seperated by comma')
   .option('--table-sync <string>', 'list of tables for sync rules seperated by comma or ignore for sync all tables')
   .option('--chain-sync <string>', 'list of default chains for sync rules seperated by comma or ignore for sync all tables')
+  .option('--fix-key <string>', 'Pre-generated key, required when sync rules from other firewalls and need to be verified by this new firewall\'s agent')
   .action(addRouter)
 
 firewallCommand
@@ -84,6 +87,13 @@ firewallCommand
   .option('-p, --port <number>', 'new port that agent will run on')
   .option('-net, --network <string>', 'Specify new network managed by this firewall.')
   .action(updateFirewall)
+
+firewallCommand
+  .command('reset-key')
+  .description('Generate new key for matched firewalls to authenticate with firewall agent')
+  .option('-fn, --firewall-name <string>', 'exact firewall name that need to update')
+  .option('-fip, --firewall-ip <string>', 'exact firewall ip that need to update')
+  .action(resetKey)
 
 // NETWORK COMMANDS 
 const networkComamnd = program
@@ -276,6 +286,11 @@ importCommand
   .option('-n, --noflush', 'Don\'t flush rules before import.')
   .option('-p, --path <string>', 'File path contains rules to import.')
   .action(importRules)
+
+const generateKey = program
+  .command('generate-key')
+  .description('Generate new key')
+  .action(randomKey)
 
 try {
   program.parse();

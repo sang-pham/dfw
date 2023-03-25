@@ -2,6 +2,7 @@ const { isUserConfigChange, getUserCache, getToken } = require('./cache/user.cac
 const config = require('../../config.json')
 const firewallConfig = require('../config/routers')
 const constant = require('./constant')
+const bcrypt = require('bcrypt')
 require('dotenv').config()
 
 const firewalls = firewallConfig.get('routers')
@@ -645,6 +646,20 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
   }
 }
 
+const randomKey = async () => {
+  let key = await new Promise((resolve, reject) => {
+    bcrypt.hash(new Date().toString(), constant.SALT_ROUNDS, (err, hash) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(hash)
+      }
+    })
+  })
+  console.log(key)
+  return key
+}
+
 module.exports = {
   checkCredentials,
   checkEnv,
@@ -654,5 +669,6 @@ module.exports = {
   getSupersetNet,
   findRelateInfoByIp,
   findRelateInfoByNetwork,
-  getIntermediateFirewalls
+  getIntermediateFirewalls,
+  randomKey
 }

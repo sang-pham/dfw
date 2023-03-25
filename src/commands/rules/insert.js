@@ -27,10 +27,15 @@ const insertRule = async (chainName, ruleOrder, options) => {
         data: [rule],
         order: ruleOrder || 1
       }),
-      headers: {'Content-Type': 'application/json'}
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': router.key
+      }
     })
     if (response.status == 200) {
       console.log(`Insert success for router ${router.name}`)
+    } else if (response.status == 401) {
+      console.log(`Invalid API key with firewall ${router.name}`)
     } else {
       try {
         let body = await response.json()

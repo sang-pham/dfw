@@ -40,14 +40,23 @@ const importRules = async (options) => {
       try {
         const response = await fetch(`http://${router.ip}:${router.port}/import-rules`, {
           method: 'put',
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          },
           body: JSON.stringify(body)
         })
         if (response.status == 200) {
           console.log(`Import rules successfully for firewall ${router.name} - ${router.ip}:${router.port}`)
+        } else if (response.status == 4001) {
+          throw new Error(`Invalid API key with firewall ${router.name}`)
         }
       } catch (error) {
-        console.log(`Fail to import rules for firewall ${router.name} - ${router.ip}:${router.port}`)
+        if (error.message) {
+          console.log(error.message)
+        } else {
+          console.log(`Fail to import rules for firewall ${router.name} - ${router.ip}:${router.port}`)
+        }
       }
     }
   } catch (error) {

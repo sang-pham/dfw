@@ -1,11 +1,13 @@
 const fetch = require('node-fetch')
 const routerConfig = require('../../config/routers')
 const { checkValidNetwork } = require('../../lib/utils')
+const bcrypt = require('bcrypt')
+const constant = require('../../lib/constant')
 
 let firewalls = routerConfig.get('routers')
 
 const addRouter = async (options) => {
-  let {ip, name, port, firewallSync, tableSync, chainSync, network} = options
+  let {ip, name, port, firewallSync, tableSync, chainSync, network, fixKey} = options
   firewallSync = firewallSync || ''
   tableSync = tableSync || ''
   chainSync = chainSync || ''
@@ -39,12 +41,32 @@ const addRouter = async (options) => {
     console.log(error.message)
     return
   }
+  let key = await new Promise((resolve, reject) => {
+    bcrypt.hash(`${name}-${ip}`, constant.SALT_ROUNDS, (err, hash) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(hash)
+      }
+    })
+  })
   if (firewallSync.length) {
     let syncFirewalls = firewallSync.split(",")
     for (const rs of syncFirewalls) {
       if (!firewalls.find(r => r.name === rs)) {
         throw new Error(`Can't find firewall ${rs}`)
       }
+    }
+    try {
+      if (syncFirewalls && syncFirewalls.length) {
+        if(!fixKey) {
+          throw new Error(`To sync rules when create new firewall, you temporarily need to generate new key before, add that key to firewall agent and restart the agent.\
+          \nThis temporary key will be replaced with the new key when creaing firewall successfully.`)
+        }
+      }
+    } catch (error) {
+      console.log(error.message)
+      return
     }
     syncFirewalls = syncFirewalls.map(firewall => firewalls.find(r => r.name === firewall))
     const defaultTables = ['filter', 'nat', 'mangle']
@@ -79,21 +101,39 @@ const addRouter = async (options) => {
         for (const table of syncTables) {
           console.log(`\t Start sync with table ${table}`)
           if (!chainSync.length) {
-            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`)
+            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`, {
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': firewall.key
+              }
+            })
+            if (res.status == 401) {
+              throw new Error(`Invalid API key with firewall ${firewall.name}`)
+            }
             data = await res.json()
             if (Object.keys(data)) {
               for (const chain in data) {
                 if (defaultChains[table].find(item => item === chain)) {
                   console.log(`\t\t Start sync with chain ${chain}`)
-                  await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
-                    method: 'post',
-                    body: JSON.stringify({ data: data[chain].map(item => ({
-                      ...item,
-                      counters: undefined
-                    })) }),
-                    headers: {'Content-Type': 'application/json'}
-                  })
-                  console.log(`\t\t Complete sync with chain ${chain}`)
+                  try {
+                    let res = await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
+                      method: 'post',
+                      body: JSON.stringify({ data: data[chain].map(item => ({
+                        ...item,
+                        counters: undefined
+                      })) }),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': fixKey
+                      }
+                    })
+                    if (res.status == 401) {
+                      throw new Error(`Invalid API key with firewall ${name}`)
+                    }
+                    console.log(`\t\t Complete sync with chain ${chain}`)
+                  } catch (error) {
+                    console.log(error.message || error)
+                  }
                 }
               }
             }
@@ -102,15 +142,25 @@ const addRouter = async (options) => {
             data = await res.json()
             for (const chain of syncChains) {
               console.log(`\t\t Start sync with chain ${chain}`)
-              await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
-                method: 'post',
-                body: JSON.stringify({ data: data[chain].map(item => ({
-                  ...item,
-                  counters: undefined
-                })) }),
-                headers: {'Content-Type': 'application/json'}
-              })
-              console.log(`\t\t Complete sync with chain ${chain}`)
+              try {
+                let res = await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
+                  method: 'post',
+                  body: JSON.stringify({ data: data[chain].map(item => ({
+                    ...item,
+                    counters: undefined
+                  })) }),
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': fixKey
+                  }
+                })
+                if (res.status == 401) {
+                  throw new Error(`Invalid API key with firewall ${name}`)
+                }
+                console.log(`\t\t Complete sync with chain ${chain}`)
+              } catch (error) {
+                console.log(error.message || error)
+              }
             }
           }
           console.log(`\tComplete sync with table ${table}`)
@@ -124,10 +174,11 @@ const addRouter = async (options) => {
     }
   }
   firewalls.push({
-    ip, name, port, network
+    ip, name, port, network, key
   })
   routerConfig.set('routers', firewalls)
-  console.log('Add new firewall successfully')
+  console.log('Add new firewall successfully.\nPlease add the following keys to your firewall agent and restart if needed, this key will appear only once')
+  console.log(key)
 }
 
 module.exports = addRouter

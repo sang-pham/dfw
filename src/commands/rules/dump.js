@@ -19,7 +19,12 @@ const dumpRules = async (options) => {
     for (const router of routers) {
       console.log(`Start saving rules from firewall ${router.name} - ${router.ip}:${router.port}`)
       try {
-        const response = await fetch(`http://${router.ip}:${router.port}/dump-rules?${query}`)
+        const response = await fetch(`http://${router.ip}:${router.port}/dump-rules?${query}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
+        })
         if (response.status == 200) {
           const data = await response.json()
           await new Promise((resolve, reject) => {
@@ -32,23 +37,40 @@ const dumpRules = async (options) => {
               }
             })
           })
+        } else if (response.status == 401) {
+          throw new Error(`Invalid API key with firewall ${router.name}`)
         }
       } catch (error) {
-        console.log(`Fail to save rules from firewall ${router.name} - ${router.ip}:${router.port}`)
+        if (error.message) {
+          console.log(error.message)
+        } else {
+          console.log(`Fail to save rules from firewall ${router.name} - ${router.ip}:${router.port}`)
+        }
       }
     }
   } else {
     for (const router of routers) {
       console.log(`\nStart dumping rules from firewall ${router.name} - ${router.ip}:${router.port}`)
       try {
-        const response = await fetch(`http://${router.ip}:${router.port}/dump-rules?${query}`)
+        const response = await fetch(`http://${router.ip}:${router.port}/dump-rules?${query}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': router.key
+          }
+        })
         if (response.status == 200) {
           const data = await response.json()
           let messages = data.data.split('\n').map(item => `\t${item}`).join('\n')
           console.log(messages)
+        } else if (response.status == 401) {
+          throw new Error(`Invalid API key with firewall ${router.name}`)
         }
       } catch (error) {
-        console.log(`Fail to dump rules from firewall ${router.name}-${router.ip}:${router.port}`)
+        if (error.message) {
+          console.log(error.message)
+        } else {
+          console.log(`Fail to dump rules from firewall ${router.name}-${router.ip}:${router.port}`)
+        }
       }
 
     }
