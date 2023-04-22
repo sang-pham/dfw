@@ -18,7 +18,7 @@ const getPolicy = async (args, options) => {
           }
         })
         const data = await res.json()
-        if (res.status == 500) {
+        if (res.status == 400) {
           if (data) {
             console.log(data.message)
           }

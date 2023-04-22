@@ -27,7 +27,7 @@ const resetKey = async (options) => {
     }
     routerConfig.set('routers', routers)
   } catch (error) {
-    console.log(error)
+    console.log(error.message || error)
   }
 }
 
