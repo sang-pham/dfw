@@ -12,16 +12,16 @@ const resetKey = async (options) => {
       console.log("No firewall matches with options")
       return
     }
-    for (const router of matchRouters) {
-      let key = await new Promise((resolve, reject) => {
-        bcrypt.hash(`${router.name}-${router.ip}`, constant.SALT_ROUNDS, (err, hash) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(hash)
-          }
-        })
+    let key = await new Promise((resolve, reject) => {
+      bcrypt.hash(new Date().toString(), constant.SALT_ROUNDS, (err, hash) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(hash)
+        }
       })
+    })
+    for (const router of matchRouters) {
       router.key = key
       console.log(`Generate new key for firewall ${router.name}: ${key}`)
     }
