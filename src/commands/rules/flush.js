@@ -3,7 +3,12 @@ const getRouterByOption = require('../../helper/getRouterByOption')
 
 const flushRule = async (chain, options) => {
   let table = options['table']
-  const routers = getRouterByOption(options)
+  let routers
+  try {
+    routers = getRouterByOption(options)
+  } catch (error) {
+    console.log(error.message || error)
+  }
   if (!routers.length) return
   if (!table && !chain) {
     for (const router of routers) {
