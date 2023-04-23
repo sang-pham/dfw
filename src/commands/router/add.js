@@ -71,9 +71,11 @@ const addRouter = async (options) => {
     syncFirewalls = syncFirewalls.map(firewall => firewalls.find(r => r.name === firewall))
     const defaultTables = ['filter', 'nat', 'mangle']
     let syncTables = tableSync.split(",")
-    for (const table of syncTables) {
-      if (!defaultTables.find(t => t == table)) {
-        throw new Error(`Invalid table ${table}`)
+    if (tableSync) {
+      for (const table of syncTables) {
+        if (!defaultTables.find(t => t == table)) {
+          throw new Error(`Invalid table ${table}`)
+        }
       }
     }
     if (!tableSync) {
@@ -138,7 +140,15 @@ const addRouter = async (options) => {
               }
             }
           } else {
-            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`)
+            res = await fetch(`http://${firewall.ip}:${firewall.port}/rules/${table}`, {
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': firewall.key
+              }
+            })
+            if (res.status == 401) {
+              throw new Error(`Invalid API key with firewall ${firewall.name}`)
+            }
             data = await res.json()
             for (const chain of syncChains) {
               console.log(`\t\t Start sync with chain ${chain}`)
