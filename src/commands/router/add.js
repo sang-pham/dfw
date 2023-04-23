@@ -118,7 +118,7 @@ const addRouter = async (options) => {
                 if (defaultChains[table].find(item => item === chain)) {
                   console.log(`\t\t Start sync with chain ${chain}`)
                   try {
-                    let res = await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
+                    let res = await fetch(`http://${ip}:${port}/rules/${table}/${chain}`, {
                       method: 'post',
                       body: JSON.stringify({ data: data[chain].map(item => ({
                         ...item,
@@ -153,7 +153,7 @@ const addRouter = async (options) => {
             for (const chain of syncChains) {
               console.log(`\t\t Start sync with chain ${chain}`)
               try {
-                let res = await fetch(`http://${ip}:${firewall.port}/rules/${table}/${chain}`, {
+                let res = await fetch(`http://${ip}:${port}/rules/${table}/${chain}`, {
                   method: 'post',
                   body: JSON.stringify({ data: data[chain].map(item => ({
                     ...item,
