@@ -8,6 +8,7 @@ const flushRule = async (chain, options) => {
     routers = getRouterByOption(options)
   } catch (error) {
     console.log(error.message || error)
+    return
   }
   if (!routers.length) return
   if (!table && !chain) {
