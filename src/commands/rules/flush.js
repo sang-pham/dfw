@@ -24,6 +24,10 @@ const flushRule = async (chain, options) => {
           console.log(`Firewall ${router.name}: ${body.message || 'Something is wrong, fail to flush.'}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         if (error.message) {
           console.log(error.message)
         } else {
@@ -52,6 +56,10 @@ const flushRule = async (chain, options) => {
           console.log(`Firewall ${router.name} - Table ${table}: ${body.message || 'Something is wrong, fail to flush.'}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         if (error.message) {
           console.log(error.message)
         } else {
@@ -83,6 +91,10 @@ const flushRule = async (chain, options) => {
           console.log(`Firewall ${router.name} - Table ${table} - Chain ${chain}: ${body.message || 'Something is wrong, fail to flush.'}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         if (error.message) {
           console.log(error.message)
         } else {

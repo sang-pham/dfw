@@ -41,6 +41,10 @@ const dumpRules = async (options) => {
           throw new Error(`Invalid API key with firewall ${router.name}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         if (error.message) {
           console.log(error.message)
         } else {
@@ -66,6 +70,10 @@ const dumpRules = async (options) => {
           throw new Error(`Invalid API key with firewall ${router.name}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         if (error.message) {
           console.log(error.message)
         } else {

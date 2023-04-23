@@ -21,17 +21,25 @@ const insertRule = async (chainName, ruleOrder, options) => {
     filterRouters = autoIdentifyFirewalls(options, chainName, options['table']  || 'filter', filterRouters)
   }
   for (const router of filterRouters) {
-    const response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${chainName}`, {
-      method: 'post',
-      body: JSON.stringify({
-        data: [rule],
-        order: ruleOrder || 1
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': router.key
+    let response
+    try {
+      response = await fetch(`http://${router.ip}:${router.port}/rules/${options['table']  || 'filter'}/${chainName}`, {
+        method: 'post',
+        body: JSON.stringify({
+          data: [rule],
+          order: ruleOrder || 1
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': router.key
+        }
+      })
+    } catch (error) {
+      if (error.code == 'ECONNREFUSED') {
+        console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+        return
       }
-    })
+    }
     if (response.status == 200) {
       console.log(`Insert success for router ${router.name}`)
     } else if (response.status == 401) {

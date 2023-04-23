@@ -31,6 +31,10 @@ const deleteRule = async (chainName, ruleOrder, options) => {
           console.log((body.message || 'Something is wrong') + ` for router ${router.name}`)
         }
       } catch (error) {
+        if (error.code == 'ECONNREFUSED') {
+          console.log(`Unable to connect to the agent at ${router.ip}:${router.port}. Make sure that your agent are running`)
+          return
+        }
         console.log(error.message || error)
       }
     }
