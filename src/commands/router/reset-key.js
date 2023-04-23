@@ -22,7 +22,8 @@ const resetKey = async (options) => {
       })
     })
     for (const router of matchRouters) {
-      router.key = key
+      let foundRouter = routers.find(_r => _r.name === router.name)
+      foundRouter.key = key
       console.log(`Generate new key for firewall ${router.name}: ${key}`)
     }
     routerConfig.set('routers', routers)

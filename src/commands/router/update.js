@@ -15,7 +15,7 @@ const updateFirewall = (options) => {
       throw new Error('Either port or network must be specified')
     }
     for (const r of matchRouters) {
-      let foundRouter = routers.find(_r => r.name === r.name)
+      let foundRouter = routers.find(_r => _r.name === r.name)
       if (port) {
         foundRouter.port = port
       }
