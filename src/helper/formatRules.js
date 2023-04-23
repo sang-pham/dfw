@@ -32,6 +32,11 @@ const formatRules = (data, options = {}) => {
     if (item.conntrack && item.conntrack.ctstate) {
       res += item.conntrack.ctstate
     }
+    if (item.protocol && Object.keys(item.protocol).length) {
+      for (let key in item.protocol) {
+        res += `${key}:${item.protocol[key]}`
+      }
+    }
     console.log(res)
     i++
   }

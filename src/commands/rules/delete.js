@@ -23,7 +23,7 @@ const deleteRule = async (chainName, ruleOrder, options) => {
           }
         })
         if (response.status == 200) {
-          console.log(`Delete success for router ${router.name}`)
+          console.log(`Delete success rule for router ${router.name}`)
         } else if (response.status == 401) {
           throw new Error(`Invalid API key with firewall ${router.name}`)
         } else {

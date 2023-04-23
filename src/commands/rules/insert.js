@@ -15,7 +15,6 @@ const insertRule = async (chainName, ruleOrder, options) => {
     return
   }
   let rule = dfwOptions2RuleObj(options)
-  console.log(rule)
   let filterRouters = getRouterByOption(options)
   if (!options['firewallName'] && !options['firewallIp']) {
     filterRouters = autoIdentifyFirewalls(options, chainName, options['table']  || 'filter', filterRouters)

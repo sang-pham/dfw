@@ -25,7 +25,6 @@ const appendRule = async (args, options) => {
       res += `-j ${options['jump']}`
     }
     let rule = dfwOptions2RuleObj(options)
-    console.log(rule)
     let filterRouters = getRouterByOption(options)
     if (!options['firewallName'] && !options['firewallIp']) {
       filterRouters = autoIdentifyFirewalls(options, args, options['table']  || 'filter', filterRouters)
