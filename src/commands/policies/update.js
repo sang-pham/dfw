@@ -28,13 +28,18 @@ const updatePolicy = async (chain, newPolicy, options) => {
     for (const router of routers) {
       const res = await fetch(`http://${router.ip}:${router.port}/policy/${table}/${chain}`, {
         method: 'put',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': router.key
+        },
         body: JSON.stringify({
           policy: newPolicy
         })
       })
       if(res.status == 200) {
         console.log(`Update policy successfully for chain ${chain} in router ${router.name} - ${router.ip}`)
+      } else if (res.status == 401) {
+        throw new Error(`Invalid API key with firewall ${router.name}`)
       } else {
         throw new Error('Something is wrong')
       }
