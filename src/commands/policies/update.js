@@ -3,13 +3,25 @@ const getRouterByOption = require('../../helper/getRouterByOption')
 
 const updatePolicy = async (chain, newPolicy, options) => {
   const table = options['table'] || 'filter'
-  console.log(chain, newPolicy, options)
   try {
     if (!chain) {
       throw new Error('Chain must be specified')
     }
     if (!newPolicy) {
       throw new Error('New policy must be specified')
+    }
+    const defaultChains = {
+      filter: ['INPUT', 'OUTPUT', 'FORWARD'],
+      nat: ['INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING'],
+      mangle: ['PREROUTING', 'INPUT', 'FORWARD', 'OUTPUT', 'POSTROUTING']
+    }
+    let chains = defaultChains[table]
+    if (!chains.find(item => item == chain)) {
+      throw new Error('Invalid chain ' + chain)
+    }
+    const polices = ['ACCEPT', 'REJECT', 'DROP']
+    if (!polices.find(item => item == newPolicy)) {
+      throw new Error('Invalid policy' + newPolicy)
     }
     const routers = getRouterByOption(options)
     if (!routers.length) return

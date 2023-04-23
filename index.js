@@ -148,7 +148,7 @@ chainCommand
   .action(getPolicy)
 
 chainCommand
-  .command('update-pocily')
+  .command('update-policy')
   .description('Update policy for specific chain')
   .argument('<chain>')
   .argument('<new-policy>')
