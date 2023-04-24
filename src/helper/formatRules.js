@@ -19,8 +19,8 @@ const formatRules = (data, options = {}) => {
       res += '\t\t'
     }
     res += `${item.protocol || 'all'}\t\t`
-    res += `${item.src || 'anywhere'}\t\t`
-    res += `${item.dst || 'anywhere'}\t\t`
+    res += `${item.src || '0.0.0.0/0'}\t\t`
+    res += `${item.dst || '0.0.0.0/0'}\t\t`
     res += `${item['in-interface'] || '*'}\t\t`
     res += `${item['out-interface'] || '*'}\t\t`
     if (Object.keys(item.target) == 'REJECT') {
@@ -32,7 +32,10 @@ const formatRules = (data, options = {}) => {
       }
     }
     if (item.conntrack && item.conntrack.ctstate) {
-      res += `${item.conntrack.ctstate}\t`
+      res += `ctstate ${item.conntrack.ctstate}\t`
+    }
+    if (item.state && item.state.state) {
+      res += `state ${item.state.state}\t`
     }
     let protocol = item.protocol
     if (item[protocol] && Object.keys(item[protocol]).length) {
