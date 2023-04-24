@@ -312,6 +312,8 @@ const getIntermediateFirewalls = function(firewall1, firewall2, firewalls) {
 
 const autoIdentifyFirewalls = (ruleOptions, chainName, tableName, firewalls) => {
   switch(tableName) {
+    case 'mangle':
+      return identifyFirewalls4Mangle(ruleOptions, chainName, firewalls)
     case 'nat':
       return identifyFirewalls4Nat(ruleOptions, chainName, firewalls)
     case 'filter':
@@ -334,6 +336,10 @@ const identifyFirewalls4Filter = (ruleOptions, chainName, firewalls) => {
 }
 
 const identifyFirewalls4Nat = (ruleOptions, chainName, firewalls) => {
+  return firewalls
+}
+
+const identifyFirewalls4Mangle = (ruleOptions, chainName, firewalls) => {
   return firewalls
 }
 
