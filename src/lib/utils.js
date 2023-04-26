@@ -558,10 +558,10 @@ const identifyFw4FilterForward = (ruleOptions, firewalls) => {
         // CASE: DROP | REJECT action => return source network and equal networks
         case constant.RULE_ACTION.DROP:
         case constant.RULE_ACTION.REJECT:
-          return {
+          return [
             sourceManagedFirewall,
             ...sourceEqualFirewalls
-          }
+          ]
       }
     } else if (!sourceManagedFirewall && destManagedFirewall) {
       // find only dest network
