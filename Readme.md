@@ -1,5 +1,7 @@
 # DFW Management Tool
 
+## A CLI tool for managing distributed firewalls in cloud environments(e.g: OpenStack,...) based on iptables.
+
 # Setup
 - Clone repository
 - Install relate packages: npm i
